@@ -1,13 +1,13 @@
-"use strict";
+'use strict';
 
-const { map, reduce } = require("lodash/fp");
+// const { map, reduce } = require('lodash/fp');
 
-const { setLogger } = require("./src/logger");
-const { parseErrorToReadableJSON } = require("./src/errors");
-const { polarityRequest } = require("./src/polarity-request");
-const { createResultObject } = require("./src/create-result-object");
-
-const { getUserWithGroup } = require("./src/get-user-with-group");
+const { setLogger, getLogger } = require('./src/logger');
+// const { parseErrorToReadableJSON } = require('./src/errors');
+// const { polarityRequest } = require('./src/polarity-request');
+const { createSession } = require('./src/create-session');
+// const { getUrlCatagories } = require('./src/get-url-catagories');
+// const { createResultObject } = require('./src/create-result-object');
 
 let Logger = null;
 
@@ -23,40 +23,50 @@ const startup = (logger) => {
  * @returns {Promise<void>}
  */
 
-const doLookup = async (entities, options, cb) => {
+async function doLookup (entities, options, cb) {
   try {
-    polarityRequest.setOptions(options);
-    polarityRequest.setHeader({
-      "Content-Type": "application/json"
-    });
-  } catch (error) {}
-};
+    // polarityRequest.setOptions(options);
+    // polarityRequest.setHeader({
+    //   'Content-Type': 'application/json'
+    // });
 
-const validateOption = (errors, options, optionName, errMessage) => {
-  if (!(typeof options[optionName].value === "string" && options[optionName].value)) {
-    errors.push({
-      key: optionName,
-      message: errMessage
-    });
+    const session = await createSession(options);
+
+    //createSession returns an object with a headers property that contains JESSIONID,
+    // which needs to be present in the headers of all subsequent requests.
+    // polarityRequest.setHeader('cookie', session[0].result.headers['set-cookie']);
+
+    // const urlCategories = await getUrlCatagories(entities);
+  } catch (error) {
+    // Logger.error({ error }, 'Unable to create session');
   }
-};
+}
 
-const validateOptions = (options, callback) => {
-  let errors = [];
+// const validateOption = (errors, options, optionName, errMessage) => {
+//   if (!(typeof options[optionName].value === "string" && options[optionName].value)) {
+//     errors.push({
+//       key: optionName,
+//       message: errMessage
+//     });
+//   }
+// };
 
-  validateOption(errors, options, "url", "You must provide an api url.");
-  validateOption(errors, options, "apiToken", "You must provide a valid access key.");
+// const validateOptions = (options, callback) => {
+//   let errors = [];
 
-  callback(null, errors);
-};
+//   validateOption(errors, options, "url", "You must provide an api url.");
+//   validateOption(errors, options, "apiToken", "You must provide a valid access key.");
+
+//   callback(null, errors);
+// };
 
 // DATA SOURCES:
 
 module.exports = {
   startup,
-  doLookup,
-  validateOptions,
-  Logger
+  doLookup
+  // validateOptions,
+  // Logger
 };
 
 // So the integration works with domains

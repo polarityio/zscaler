@@ -1,35 +1,40 @@
-const { polarityRequest } = require("../src/polarity-request");
-const { getLogger } = require("./logger");
+const { polarityRequest } = require('./polarity-request');
+const { getLogger } = require('./logger');
 
 async function createSession (options) {
   const Logger = getLogger();
-  const timestamp = new Date().getTime().toString();
+  Logger.trace({ options }, 'Options');
+  // const Logger = getLogger();
+  // const timestamp = new Date().getTime().toString();
+  // const apiKey = obfuscateApiKey(timestamp, options.token);
 
-  const apiKey = obfuscateApiKey(timestamp, options.apiKey);
+  // const requestOptions = {
+  //   method: 'POST',
+  //   path: '/api/v1/authenticatedSession',
+  //   body: {
+  // apiKey,
+  // username: options.username,
+  // password: options.password,
+  // timestamp
+  //   }
+  // };
 
-  const requestOptions = {
-    method: "POST",
-    path: "/authenticatedSession",
-    body: {
-      apiKey,
-      username: options.username,
-      password: options.password,
-      timestamp: options.timestamp
-    }
-  };
+  // Logger.trace({ requestOptions }, 'Create Session Request');
+  // Logger.trace({ ADDA: polarityRequest.options }, 'Timestamp');
 
-  const response = await polarityRequest.send(requestOptions);
-
-  Logger.trace({ response }, "Create Session Response");
+  const response = await polarityRequest.request('asdas');
+  // polarityRequest.setHeader('set-cookie', session.headers['set-cookie']);
+  // Logger.trace({ requestOptions }, 'AAAAe');
+  // return response;
 }
 
 function obfuscateApiKey (timestamp, key) {
   let high = timestamp.substring(timestamp.length - 6);
   let low = (parseInt(high) >> 1).toString();
-  let apiKey = "";
+  let apiKey = '';
 
   while (low.length < 6) {
-    low = "0" + low;
+    low = '0' + low;
   }
 
   for (var i = 0; i < high.length; i++) {
