@@ -1,13 +1,10 @@
 'use strict';
 
-// const { map, reduce } = require('lodash/fp');
-
 const { setLogger, getLogger } = require('./src/logger');
-// const { parseErrorToReadableJSON } = require('./src/errors');
-// const { polarityRequest } = require('./src/polarity-request');
-const { createSession } = require('./src/create-session');
-// const { getUrlCatagories } = require('./src/get-url-catagories');
-// const { createResultObject } = require('./src/create-result-object');
+const { polarityRequest } = require('./src/polarity-request');
+const { urlLookup } = require('./src/url-lookup');
+const { createResultObject } = require('./src/create-result-object');
+const { map } = require('lodash/fp');
 
 let Logger = null;
 
@@ -25,25 +22,71 @@ const startup = (logger) => {
 
 async function doLookup (entities, options, cb) {
   try {
-    // polarityRequest.setOptions(options);
-    // polarityRequest.setHeader({
-    //   'Content-Type': 'application/json'
-    // });
+    const Logger = getLogger();
 
-    const session = await createSession(options);
+    polarityRequest.setOptions(options);
 
-    //createSession returns an object with a headers property that contains JESSIONID,
-    // which needs to be present in the headers of all subsequent requests.
-    // polarityRequest.setHeader('cookie', session[0].result.headers['set-cookie']);
+    const timestamp = new Date().getTime().toString();
+    const apiKey = obfuscateApiKey(timestamp, options.token);
 
-    // const urlCategories = await getUrlCatagories(entities);
+    polarityRequest.setHeader({
+      'Content-Type': 'application/json'
+    });
+
+    const requestOptions = {
+      method: 'POST',
+      path: '/api/v1/authenticatedSession',
+      body: {
+        apiKey,
+        username: options.username,
+        password: options.password,
+        timestamp
+      }
+    };
+    Logger.trace({ requestOptions }, 'Authenticated Session Request Options');
+    //create session to get JSESSIONID cookie
+    const session = await polarityRequest.request(requestOptions);
+    Logger.trace({ session }, 'Created  Session');
+    // setting cookie header
+    polarityRequest.setHeader('cookie', session.headers['set-cookie']);
+
+    const urls = await urlLookup(entities);
+    Logger.trace({ urls }, 'URL lookup Response');
+
+    const lookupResults = map((result) => {
+      return createResultObject(result);
+    }, urls);
+    Logger.trace({ lookupResults }, 'Lookup Results');
+
+    return cb(null, lookupResults);
   } catch (error) {
-    // Logger.error({ error }, 'Unable to create session');
+    Logger.error({ error }, 'Error');
+    cb(error);
   }
 }
 
+function obfuscateApiKey (timestamp, key) {
+  let high = timestamp.substring(timestamp.length - 6);
+  let low = (parseInt(high) >> 1).toString();
+  let apiKey = '';
+
+  while (low.length < 6) {
+    low = '0' + low;
+  }
+
+  for (var i = 0; i < high.length; i++) {
+    apiKey += key.charAt(parseInt(high.charAt(i)));
+  }
+
+  for (var j = 0; j < low.length; j++) {
+    apiKey += key.charAt(parseInt(low.charAt(j)) + 2);
+  }
+
+  return apiKey;
+}
+
 // const validateOption = (errors, options, optionName, errMessage) => {
-//   if (!(typeof options[optionName].value === "string" && options[optionName].value)) {
+//   if (!(typeof options[optionName].value === 'string' && options[optionName].value)) {
 //     errors.push({
 //       key: optionName,
 //       message: errMessage
@@ -54,24 +97,13 @@ async function doLookup (entities, options, cb) {
 // const validateOptions = (options, callback) => {
 //   let errors = [];
 
-//   validateOption(errors, options, "url", "You must provide an api url.");
-//   validateOption(errors, options, "apiToken", "You must provide a valid access key.");
+//   validateOption(errors, options, 'url', 'You must provide an api url.');
+//   validateOption(errors, options, 'apiToken', 'You must provide a valid access key.');
 
 //   callback(null, errors);
 // };
 
-// DATA SOURCES:
-
 module.exports = {
   startup,
   doLookup
-  // validateOptions,
-  // Logger
 };
-
-// So the integration works with domains
-// When a user searches on a domain the integration will always return a result
-// The result will either have an "Add to category" button or a "Remove from category" button depending on whether the domain is already in the category or not
-// I haven't checked the API yet so not sure how easy that is to do
-// I don't think we even need to run a search until maybe onDetails?
-// I guess it depends on performance of that category search

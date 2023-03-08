@@ -1,5 +1,5 @@
-const { get } = require("lodash/fp");
-const { getLogger } = require("./logger");
+const { get } = require('lodash/fp');
+const { getLogger } = require('./logger');
 
 /**
  * Return a Result Object or a Result Miss Object based on the REST API response.
@@ -7,21 +7,15 @@ const { getLogger } = require("./logger");
  * @param apiResponse - response object from API Rest request
  * @returns {{data: null, entity}|{data: {summary: [string], details}, entity}}
  */
-const createResultObject = (results) => {
-  if (isMiss(results)) {
-    return {
-      entity: results.entity,
-      data: null
-    };
-  }
+const createResultObject = (result) => {
+  const Logger = getLogger();
 
   return {
-    entity: results.entity,
+    entity: result.entity,
     data: {
-      summary: createSummaryTags(results),
+      summary: createSummaryTags(result),
       details: {
-        user: results.user.result.body,
-        userGroup: results.userGroup.result.body
+        urls: result.url
       }
     }
   };
@@ -30,13 +24,6 @@ const createResultObject = (results) => {
 const createSummaryTags = (resultsForThisEntity) => {
   const tags = [];
   const Logger = getLogger();
-
-  Logger.trace({ resultsForThisEntity }, "Results for this entity");
-
-  resultsForThisEntity.user.result.body.credentials.emails.forEach((email) => {
-    tags.push(`Email: ${get("value", email)}`);
-    tags.push(`Status: ${get("status", email)}`);
-  });
 
   return tags;
 };
@@ -47,6 +34,5 @@ const createSummaryTags = (resultsForThisEntity) => {
  * @param apiResponse
  * @returns {boolean}
  */
-const isMiss = (results) => results.user.result.statusCode === 404;
 
-module.exports = { createResultObject, isMiss };
+module.exports = { createResultObject };
