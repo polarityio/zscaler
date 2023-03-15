@@ -2,13 +2,17 @@ const { polarityRequest } = require('./polarity-request');
 const { getLogger } = require('./logger');
 const { find } = require('lodash/fp');
 
-async function urlLookup (payload) {
+//ideally, we would cache the results of this function, as it is going to be called
+// anytime a user selects a category from the dropdown.
+async function categoryLookup (payload) {
   const Logger = getLogger();
+
+  Logger.trace({ payload }, 'Payload');
 
   const requestOptions = {
     entity: payload.data.entity,
     method: 'GET',
-    path: `/api/v1/urlCategories/${payload.data.category}`
+    path: `/api/v1/urlCategories/${payload.data.category.trim()}`
   };
 
   Logger.trace({ requestOptions }, 'Request Options');
@@ -39,4 +43,4 @@ function domainIsInCategory (response) {
   return found;
 }
 
-module.exports = { urlLookup };
+module.exports = { categoryLookup };

@@ -64,6 +64,24 @@ module.exports = {
       adminOnly: true
     },
     {
+      key: 'superCategory',
+      name: 'Super Category',
+      description: 'add description here',
+      default: '',
+      type: 'text',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'submitAsUrl',
+      name: 'Submit As URL',
+      description: 'add description here',
+      default: false,
+      type: 'boolean',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
       key: 'categories',
       name: 'Categories',
       description: 'add description here',

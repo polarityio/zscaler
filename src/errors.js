@@ -93,7 +93,7 @@ class IntegrationError extends Error {
     Logger.info({ properties }, 'Error properties');
     // These are enumerable properties which the Polarity server can access
     // Most important is the `detail` property which is used to display
-    // a user friendly message in the Overlay Window.
+  // a user friendly message in the Overlay Window.
     this.detail = message;
     this.name = this.constructor.name;
     this.help = '';

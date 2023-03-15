@@ -8,20 +8,16 @@ polarity.export = PolarityComponent.extend({
   addUrlMessage: '',
   removeUrlErrorMessage: '',
   removeUrlMessage: '',
-  removeUrlErrorMessage: '',
-  removeUrlMessage: '',
+  categoryLookupErrorMessage: '',
   timezone: Ember.computed('Intl', function () {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }),
   init () {
     const categories = this.get('block.userOptions.categories');
     const list = categories.split(',');
-
-    this.set('inCategory', 'Please Select a Category');
-
+    // set the first category in the user options list as the default
+    this.set('selectedCategory', this.get('block.userOptions.categories')[0]);
     this.set('categories', list);
-
-    console.log(this.get('categories'));
 
     this._super(...arguments);
   },
@@ -30,13 +26,14 @@ polarity.export = PolarityComponent.extend({
       console.log(value);
       this.set('isRunning', true);
 
-      this.get()
+      this.get();
 
       this.sendIntegrationMessage({
         action: 'ADD_URL',
         data: {
           entity: this.get('block.entity'),
-          category: this.get('selectedCategory')
+          category: this.get('selectedCategory'),
+          configuredName: this.get('configuredName')
         }
       })
         .then((response) => {
@@ -45,8 +42,7 @@ polarity.export = PolarityComponent.extend({
           }
         })
         .catch((err) => {
-          this.set('addUrlErrorMessage', err);
-          this.set('error', err);
+          this.set('addUrlErrorMessage', `${err}`);
         })
         .finally(() => {
           this.set('isRunning', false);
@@ -59,7 +55,9 @@ polarity.export = PolarityComponent.extend({
       this.sendIntegrationMessage({
         action: 'REMOVE_URL',
         data: {
-          entity: this.get('block.entity')
+          entity: this.get('block.entity'),
+          category: this.get('selectedCategory'),
+          configuredName: this.get('configuredName')
         }
       })
         .then((response) => {
@@ -68,31 +66,32 @@ polarity.export = PolarityComponent.extend({
           }
         })
         .catch((err) => {
-          this.set('removeUrlErrorMessage', err);
-          this.set('error', err);
+          this.set('removeUrlErrorMessage', `${err}`);
         })
         .finally(() => {
           this.set('isRunning', false);
           this.get('block').notifyPropertyChange('data');
         });
     },
-    getCategory: function (category) {
-      console.log(category);
+    categoryLookup: function (event) {
+      const category = event.target.value;
+      this.set('selectedCategory', category);
+
       this.sendIntegrationMessage({
         action: 'CATEGORY_LOOKUP',
         data: {
           entity: this.get('block.entity'),
-          category: category.trim()
+          category: category
         }
       })
         .then((response) => {
-          console.log(response);
           // the query functions always return an array of results, this will only
           // ever be a single object, so we can just grab the first element.
           this.set('inCategory', response[0].result.body.inCategory);
+          this.set('configuredName', response[0].result.body.configuredName);
         })
         .catch((err) => {
-          this.set('error', err);
+          this.set('categoryLookupErrorMessage', `${err}`);
         });
     }
   }

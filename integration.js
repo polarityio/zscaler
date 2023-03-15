@@ -4,10 +4,10 @@ const { map } = require('lodash/fp');
 
 const { setLogger, getLogger } = require('./src/logger');
 const { polarityRequest } = require('./src/polarity-request');
-const { urlLookup } = require('./src/url-lookup');
+const { categoryLookup } = require('./src/category-lookup');
 const { createResultObject } = require('./src/create-result-object');
 const { obfuscateApiKey } = require('./src/obfuscate-api-key');
-const { AuthRequestError, RetryRequestError } = require('./src/errors');
+const { AuthRequestError } = require('./src/errors');
 const { addUrl } = require('./src/add-url');
 const { removeUrl } = require('./src/remove-url');
 
@@ -30,28 +30,14 @@ async function doLookup (entities, options, cb) {
     const Logger = getLogger();
 
     polarityRequest.setOptions(options);
-
-    const timestamp = new Date().getTime().toString();
-    const apiKey = obfuscateApiKey(timestamp, options.token);
-
     polarityRequest.setHeader({
       'Content-Type': 'application/json'
     });
-    //create session to get JSESSIONID cookie
-    const session = await polarityRequest.request({
-      method: 'POST',
-      path: '/api/v1/authenticatedSession',
-      body: {
-        apiKey,
-        username: options.username,
-        password: options.password,
-        timestamp
-      }
-    });
-    Logger.trace({ session }, 'Created  Session');
-    // setting cookie header
-    polarityRequest.setHeader('cookie', session.headers['set-cookie']);
 
+    const session = await createSession(options);
+    Logger.trace({ session }, 'Created  Session');
+
+    polarityRequest.setHeader('cookie', session.headers['set-cookie']);
     /*
      this is creating results with no data, this is specific to this integration. 
      we just want the blocks to be rendered in the overlay without making any api calls.
@@ -62,38 +48,55 @@ async function doLookup (entities, options, cb) {
     return cb(null, lookupResults);
   } catch (error) {
     if (error instanceof AuthRequestError) {
-      delete this.headers['cookie'];
-      const session = await createSession(this.options);
-      this.setHeader('cookie', session.headers['set-cookie']);
+      // this needs to be fixed, there is bugs in the code.
+      delete polarityRequest.headers['cookie'];
+      const session = await createSession(polarityRequest.options);
+      polarityRequest.setHeader('cookie', session.headers['set-cookie']);
+
+      return polarityRequest.send(polarityRequest.requestOptions);
     }
 
-    if (error instanceof RetryRequestError) {
-      polarityRequest.retries += 1;
-
-      if (polarityRequest.retries <= 3) {
-        return polarityRequest.send(polarityRequest.requestOptions);
-      }
-    }
-
-    Logger.error({ error }, 'Error');
-    cb(error);
+    const errorAsPojo = parseErrorToReadableJSON(error);
+    Logger.error({ error: errorAsPojo }, 'Error in doLookup');
+    cb(errorAsPojo);
   }
+}
+
+async function createSession (options) {
+  const timestamp = new Date().getTime().toString();
+  const apiKey = obfuscateApiKey(timestamp, options.token);
+
+  const sessionRequestOptions = {
+    method: 'POST',
+    path: '/api/v1/authenticatedSession',
+    body: {
+      apiKey,
+      username: options.username,
+      password: options.password,
+      timestamp
+    }
+  };
+  const session = await polarityRequest.request(sessionRequestOptions);
+  return session;
 }
 
 async function onMessage (payload, options, cb) {
   const Logger = getLogger();
+  Logger.trace({ payload }, 'Payload');
 
-  const actions = {
-    ADD_URL: await addUrl(payload),
-    CATEGORY_LOOKUP: await urlLookup(payload),
-    REMOVE_URL: await removeUrl(payload)
-  };
-
-  const response = actions[payload.action];
-
-  Logger.trace({ response }, 'Response');
-
-  cb(null, response);
+  switch (payload.action) {
+    case 'CATEGORY_LOOKUP':
+      cb(null, await categoryLookup(payload));
+      break;
+    case 'ADD_URL':
+      cb(null, await addUrl(payload));
+      break;
+    case 'REMOVE_URL':
+      cb(null, await removeUrl(payload));
+      break;
+    default:
+      cb(null, 'No action found');
+  }
 }
 
 module.exports = {

@@ -1,6 +1,5 @@
 const fs = require('fs');
 const request = require('postman-request');
-const Bottleneck = require('bottleneck');
 const { getLogger } = require('./logger');
 const {
   NetworkError,
@@ -31,8 +30,8 @@ const HTTP_CODE_SUCCESS_201 = 201;
 const HTTP_CODE_SUCCESS_202 = 202;
 
 const HTTP_CODE_BAD_REQUEST_400 = 400;
-
 const HTTP_CODE_EXPIRED_BEARER_TOKEN_401 = 401;
+const HTTP_CODE_TOKEN_MISSING_PERMISSIONS_OR_REVOKED_403 = 403;
 const HTTP_CODE_NOT_FOUND_404 = 404;
 const HTTP_CODE_API_LIMIT_REACHED_429 = 429;
 
@@ -47,12 +46,6 @@ class PolarityRequest {
     this.headers = {};
     this.options = {};
     this.retries = 0;
-    // this.limiter = new Bottleneck({
-    //   maxConcurrent: Number.parseInt(this.options.maxConcurrent, 10),
-    //   highWater: 100,
-    //   strategy: Bottleneck.strategy.OVERFLOW,
-    //   minTime: Number.parseInt(this.options.minTime, 10)
-    // });
   }
   /**
    * Set header `field` to `val`, or pass
@@ -101,7 +94,7 @@ class PolarityRequest {
     const { path, ...requestOptions } = reqOpts;
     Logger.trace({ requestOptions }, 'Request Options');
 
-    // set the request options so that we can use it in the retry logic
+    // CHANGE THIS: set the request options so that we can use it in the retry logic
     this.requestOptions = requestOptions;
 
     return new Promise((resolve, reject) => {
@@ -129,7 +122,7 @@ class PolarityRequest {
         if (statusCode === HTTP_CODE_EXPIRED_BEARER_TOKEN_401) {
           return reject(
             new AuthRequestError(
-              `Authentication Error: If the your token has expired, 
+              `Authentication Error: If the your token has not timed out, 
                please run the search again to get a new token. 
                Or Check that your Zscalar API token is valid.`,
               {
@@ -140,20 +133,43 @@ class PolarityRequest {
           );
         }
 
+        if (statusCode === HTTP_CODE_TOKEN_MISSING_PERMISSIONS_OR_REVOKED_403) {
+          return reject(
+            new AuthRequestError(
+              `Token Error: This code is returned due to one of the following reasons:
+
+               - The API key was disabled by your service provider
+               - User's role has no access permissions or functional scope
+               - A required SKU subscription is missing
+               - API operations that use POST, PUT, or DELETE methods are performed when the ZIA Admin Portal is in maintenance mode during a scheduled upgrade
+              `
+            )
+          );
+        }
+
         if (statusCode === HTTP_CODE_NOT_FOUND_404) {
           response.result.body = null; // set the body to null so that the caller doesn't have to check for it
           return resolve({ ...response, requestOptions });
         }
 
         if (statusCode === HTTP_CODE_API_LIMIT_REACHED_429) {
+          this.retries += 1;
+
+          if (this.retries <= 3) {
+            return this.send(this.requestOptions);
+          }
+
           return reject(
-            new RetryRequestError('API Limit Reached', {
-              statusCode,
-              requestOptions
-            })
+            new RetryRequestError(
+              `API Limit Error: Exceeded the rate limit or quota. Please try again later.`,
+              {
+                statusCode,
+                requestOptions
+              }
+            )
           );
         }
-        // need retry logic for 429, 500, 502, 504
+
         if (err) {
           if (
             statusCode === HTTP_CODE_SERVER_LIMIT_500 ||
@@ -161,10 +177,14 @@ class PolarityRequest {
             statusCode === HTTP_CODE_SERVER_LIMIT_504
           ) {
             return reject(
-              new NetworkError('Network error', {
-                cause: err,
-                requestOptions
-              })
+              new NetworkError(
+                `Network Error: an unexpected error has occurred, Or
+                 the Zscaler API is currently unavailable. Please try again later.`,
+                {
+                  cause: err,
+                  requestOptions
+                }
+              )
             );
           }
         }

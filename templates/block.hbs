@@ -1,6 +1,7 @@
 <select
   class="category-selection"
-  onchange={{action (mut selectedCategory) value="target.value"}}
+  onchange={{action "categoryLookup"}}
+  value="target.value"
 >
   {{#each categories as |category|}}
     <option class="category" value="{{category}}">{{category}}</option>

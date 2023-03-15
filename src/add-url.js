@@ -4,13 +4,14 @@ const { getLogger } = require('./logger');
 async function addUrl (payload) {
   const Logger = getLogger();
 
+  Logger.trace({ data: payload.data.category }, 'DDDDDD');
+
   const response = await polarityRequest.send({
     method: 'PUT',
     path: `/api/v1/urlCategories/${payload.data.category.trim()}?action=ADD_TO_LIST`,
     body: {
-      superCategory: 'ENTERTAINMENT_AND_RECREATION',
-      urls: ['asdasdsad.com'],
-      dbCategorizedUrls: [payload.data.entity.value]
+      configuredName: payload.data.configuredName,
+      urls: [payload.data.entity.value]
     }
   });
 
@@ -20,9 +21,8 @@ async function addUrl (payload) {
 
 module.exports = { addUrl };
 
-
 // set default category
-// fix add url 
+// fix add url
 // add super category as a user option
 // error messages, template, styles.
-// fix footnotes in the overlay  
+// fix footnotes in the overlay
