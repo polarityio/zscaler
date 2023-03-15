@@ -62,6 +62,35 @@ module.exports = {
       type: 'password',
       userCanEdit: false,
       adminOnly: true
+    },
+    {
+      key: 'categories',
+      name: 'Categories',
+      description: 'add description here',
+      default: '',
+      type: 'text',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'maxConcurrent',
+      name: 'Max Concurrent Requests',
+      description:
+        'Maximum number of concurrent requests.  Integration must be restarted after changing this option. Defaults to 20.',
+      default: 20,
+      type: 'number',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'minTime',
+      name: 'Minimum Time Between Lookups',
+      description:
+        'Minimum amount of time in milliseconds between lookups. Integration must be restarted after changing this option. Defaults to 100.',
+      default: 100,
+      type: 'number',
+      userCanEdit: false,
+      adminOnly: true
     }
   ]
 };

@@ -2,8 +2,12 @@ const fs = require('fs');
 const request = require('postman-request');
 const Bottleneck = require('bottleneck');
 const { getLogger } = require('./logger');
-const { NetworkError, ApiRequestError, RetryRequestError } = require('./errors');
-const { createSession } = require('./create-session');
+const {
+  NetworkError,
+  ApiRequestError,
+  RetryRequestError,
+  AuthRequestError
+} = require('./errors');
 const {
   request: { ca, cert, key, passphrase, rejectUnauthorized, proxy }
 } = require('../config/config.js');
@@ -39,6 +43,7 @@ const HTTP_CODE_SERVER_LIMIT_504 = 504;
 class PolarityRequest {
   constructor () {
     this.requestWithDefaults = request.defaults(defaults);
+    this.requestOptions = {};
     this.headers = {};
     this.options = {};
     this.retries = 0;
@@ -94,8 +99,10 @@ class PolarityRequest {
     };
 
     const { path, ...requestOptions } = reqOpts;
-
     Logger.trace({ requestOptions }, 'Request Options');
+
+    // set the request options so that we can use it in the retry logic
+    this.requestOptions = requestOptions;
 
     return new Promise((resolve, reject) => {
       this.requestWithDefaults(requestOptions, async (err, response) => {
@@ -112,25 +119,32 @@ class PolarityRequest {
 
         if (statusCode === HTTP_CODE_BAD_REQUEST_400) {
           return reject(
-            new ApiRequestError('Bad Request', {
+            new ApiRequestError(`API Request Error: Check your Zscalar instance URL`, {
               statusCode,
               requestOptions
             })
           );
         }
 
-        if (statusCode === HTTP_CODE_NOT_FOUND_404) {
-          return resolve([]);
+        if (statusCode === HTTP_CODE_EXPIRED_BEARER_TOKEN_401) {
+          return reject(
+            new AuthRequestError(
+              `Authentication Error: If the your token has expired, 
+               please run the search again to get a new token. 
+               Or Check that your Zscalar API token is valid.`,
+              {
+                statusCode,
+                requestOptions
+              }
+            )
+          );
         }
 
-        if (statusCode === HTTP_CODE_EXPIRED_BEARER_TOKEN_401) {
-          Logger.trace('Token Expired');
-          const session = await createSession(this.options);
-          delete this.headers['cookie'];
-          this.setHeader('cookie', session.headers['set-cookie']);
-          return resolve(this.request(requestOptions));
+        if (statusCode === HTTP_CODE_NOT_FOUND_404) {
+          response.result.body = null; // set the body to null so that the caller doesn't have to check for it
+          return resolve({ ...response, requestOptions });
         }
-        // need retry logic for 429, 500, 502, 504
+
         if (statusCode === HTTP_CODE_API_LIMIT_REACHED_429) {
           return reject(
             new RetryRequestError('API Limit Reached', {
@@ -139,7 +153,7 @@ class PolarityRequest {
             })
           );
         }
-
+        // need retry logic for 429, 500, 502, 504
         if (err) {
           if (
             statusCode === HTTP_CODE_SERVER_LIMIT_500 ||

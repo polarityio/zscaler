@@ -1,38 +1,42 @@
-const { get } = require('lodash/fp');
 const { getLogger } = require('./logger');
-
 /**
  * Return a Result Object or a Result Miss Object based on the REST API response.
- * @param entity - entity object
- * @param apiResponse - response object from API Rest request
+ * @param null || {entity, result}
+ * if I pass nothing in, I want it to return a result object with no data
+ * if i pass in a single object, I want it to return a result object with data
+ * either pass in a single object or an array of objects, being
  * @returns {{data: null, entity}|{data: {summary: [string], details}, entity}}
  */
-const createResultObject = (result) => {
+const createResultObject = (arguments) => {
   const Logger = getLogger();
+  Logger.trace({ arguments }, 'createResultObject arguments');
 
-  return {
-    entity: result.entity,
-    data: {
-      summary: createSummaryTags(result),
-      details: {
-        urls: result.url
+  if (Object.keys(arguments).length <= 1) {
+    const { entity, result } = arguments;
+    return {
+      entity,
+      data: {
+        summary: createSummaryTags(result),
+        details: {
+          urls: result.body
+        }
       }
-    }
-  };
+    };
+  } else {
+    return {
+      entity: arguments,
+      data: {
+        summary: [arguments.value],
+        details: []
+      }
+    };
+  }
 };
 
-const createSummaryTags = (resultsForThisEntity) => {
+const createSummaryTags = (result) => {
   const tags = [];
-  const Logger = getLogger();
-
+  tags.push(`Category: ${result.body.configuredName}`);
   return tags;
 };
-
-/**
- * Okta API returns a 404 status code if a particular IP has no data on it.
- *
- * @param apiResponse
- * @returns {boolean}
- */
 
 module.exports = { createResultObject };

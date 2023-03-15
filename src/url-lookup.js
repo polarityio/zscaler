@@ -1,44 +1,42 @@
 const { polarityRequest } = require('./polarity-request');
 const { getLogger } = require('./logger');
-const { map, find, forEach } = require('lodash/fp');
+const { find } = require('lodash/fp');
 
-async function urlLookup (entities) {
-  let results;
+async function urlLookup (payload) {
   const Logger = getLogger();
 
-  const urlList = map((entity) => entity.value, entities);
-
   const requestOptions = {
-    method: 'POST',
-    path: '/api/v1/urlLookup',
-    body: urlList
+    entity: payload.data.entity,
+    method: 'GET',
+    path: `/api/v1/urlCategories/${payload.data.category}`
   };
+
+  Logger.trace({ requestOptions }, 'Request Options');
 
   const response = await polarityRequest.send(requestOptions);
   Logger.trace({ response }, 'URL Lookup api response');
 
-  forEach((result) => {
-    results = associateEntitiesWithResults(entities, result);
-  }, response);
+  for (const obj of response) {
+    if (domainIsInCategory(obj)) {
+      obj.result.body.inCategory = true;
+    } else {
+      obj.result.body.inCategory = false;
+    }
+  }
 
-  Logger.trace({ results }, 'results');
-  return results;
+  Logger.trace({ response }, 'URL Lookup api response');
+  return response;
 }
 
-const associateEntitiesWithResults = (entities, obj) => {
-  const Logger = getLogger();
+function domainIsInCategory (response) {
+  const value = response.entity.value;
+  const dbCategorizedUrls = response.result.body.dbCategorizedUrls;
 
-  const entitiesWithResults = map((entity) => {
-    const result = find((r) => r.url === entity.value, obj.result.body);
+  const found = find((url) => {
+    return url === value;
+  }, dbCategorizedUrls);
 
-    return {
-      entity,
-      url: result
-    };
-  }, entities);
-
-  Logger.trace({ entitiesWithResults }, 'entitiesWithResults');
-  return entitiesWithResults;
-};
+  return found;
+}
 
 module.exports = { urlLookup };

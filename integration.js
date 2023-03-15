@@ -1,10 +1,15 @@
 'use strict';
 
+const { map } = require('lodash/fp');
+
 const { setLogger, getLogger } = require('./src/logger');
 const { polarityRequest } = require('./src/polarity-request');
 const { urlLookup } = require('./src/url-lookup');
 const { createResultObject } = require('./src/create-result-object');
-const { map } = require('lodash/fp');
+const { obfuscateApiKey } = require('./src/obfuscate-api-key');
+const { AuthRequestError, RetryRequestError } = require('./src/errors');
+const { addUrl } = require('./src/add-url');
+const { removeUrl } = require('./src/remove-url');
 
 let Logger = null;
 
@@ -32,8 +37,8 @@ async function doLookup (entities, options, cb) {
     polarityRequest.setHeader({
       'Content-Type': 'application/json'
     });
-
-    const requestOptions = {
+    //create session to get JSESSIONID cookie
+    const session = await polarityRequest.request({
       method: 'POST',
       path: '/api/v1/authenticatedSession',
       body: {
@@ -42,48 +47,60 @@ async function doLookup (entities, options, cb) {
         password: options.password,
         timestamp
       }
-    };
-    Logger.trace({ requestOptions }, 'Authenticated Session Request Options');
-    //create session to get JSESSIONID cookie
-    const session = await polarityRequest.request(requestOptions);
+    });
     Logger.trace({ session }, 'Created  Session');
     // setting cookie header
     polarityRequest.setHeader('cookie', session.headers['set-cookie']);
 
-    const urls = await urlLookup(entities);
-    Logger.trace({ urls }, 'URL lookup Response');
-
-    const lookupResults = map((result) => {
-      return createResultObject(result);
-    }, urls);
+    /*
+     this is creating results with no data, this is specific to this integration. 
+     we just want the blocks to be rendered in the overlay without making any api calls.
+    */
+    const lookupResults = map((entity) => createResultObject(entity), entities);
     Logger.trace({ lookupResults }, 'Lookup Results');
 
     return cb(null, lookupResults);
   } catch (error) {
+    if (error instanceof AuthRequestError) {
+      delete this.headers['cookie'];
+      const session = await createSession(this.options);
+      this.setHeader('cookie', session.headers['set-cookie']);
+    }
+
+    if (error instanceof RetryRequestError) {
+      polarityRequest.retries += 1;
+
+      if (polarityRequest.retries <= 3) {
+        return polarityRequest.send(polarityRequest.requestOptions);
+      }
+    }
+
     Logger.error({ error }, 'Error');
     cb(error);
   }
 }
 
-function obfuscateApiKey (timestamp, key) {
-  let high = timestamp.substring(timestamp.length - 6);
-  let low = (parseInt(high) >> 1).toString();
-  let apiKey = '';
+async function onMessage (payload, options, cb) {
+  const Logger = getLogger();
 
-  while (low.length < 6) {
-    low = '0' + low;
-  }
+  const actions = {
+    ADD_URL: await addUrl(payload),
+    CATEGORY_LOOKUP: await urlLookup(payload),
+    REMOVE_URL: await removeUrl(payload)
+  };
 
-  for (var i = 0; i < high.length; i++) {
-    apiKey += key.charAt(parseInt(high.charAt(i)));
-  }
+  const response = actions[payload.action];
 
-  for (var j = 0; j < low.length; j++) {
-    apiKey += key.charAt(parseInt(low.charAt(j)) + 2);
-  }
+  Logger.trace({ response }, 'Response');
 
-  return apiKey;
+  cb(null, response);
 }
+
+module.exports = {
+  startup,
+  doLookup,
+  onMessage
+};
 
 // const validateOption = (errors, options, optionName, errMessage) => {
 //   if (!(typeof options[optionName].value === 'string' && options[optionName].value)) {
@@ -102,8 +119,3 @@ function obfuscateApiKey (timestamp, key) {
 
 //   callback(null, errors);
 // };
-
-module.exports = {
-  startup,
-  doLookup
-};

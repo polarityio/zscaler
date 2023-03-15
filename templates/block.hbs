@@ -1,181 +1,21 @@
-{{#if details.user.status}}
-  <div>
-    <span class="p-key">User Status: </span>
-    <span class="p-value">{{details.user.status}}</span>
-  </div>
-{{/if}}
-{{#if details.user.profile}}
-  <h1 class="p-title">{{fa-icon icon="user" fixedWidth=true}} User Profile: </h1>
-  {{#if details.user.profile.firstName}}
-    <div>
-      <span class="p-key">First Name: </span>
-      <span class="p-value">{{details.user.profile.firstName}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.profile.lastName}}
-    <div>
-      <span class="p-key">Last Name: </span>
-      <span class="p-value">{{details.user.profile.lastName}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.profile.mobilePhone}}
-    <div>
-      <span class="p-key">Mobile Phone: </span>
-      <span class="p-value">{{details.user.profile.mobilePhone}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.profile.email}}
-    <div>
-      <span class="p-key">Email: </span>
-      <span class="p-value">{{details.user.profile.email}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.profile.secondEmail}}
-    <div>
-      <span class="p-key">Second Email: </span>
-      <span class="p-value">{{details.user.profile.secondEmail}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.profile.login}}
-    <div>
-      <span class="p-key">Login: </span>
-      <span class="p-value">{{details.user.profile.login}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.lastLogin}}
-    <div>
-      <span class="p-key">Last Login: </span>
-      <span class="p-value">{{moment-format
-          indicator.created_on
-          "MM/DD/YYYY HH:mm:ss"
-          timeZone=timezone
-        }}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.activated}}
-    <div>
-      <span class="p-key">Activated: </span>
-      <span class="p-value">{{moment-format
-          indicator.created_on
-          "MM/DD/YYYY HH:mm:ss"
-          timeZone=timezone
-        }}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.statusChanged}}
-    <div>
-      <span class="p-key">Status Changed: </span>
-      <span class="p-value">{{moment-format
-          indicator.created_on
-          "MM/DD/YYYY HH:mm:ss"
-          timeZone=timezone
-        }}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.passwordChanged}}
-    <div>
-      <span class="p-key">Pass. Changed: </span>
-      <span class="p-value">{{moment-format
-          indicator.created_on
-          "MM/DD/YYYY HH:mm:ss"
-          timeZone=timezone
-        }}</span>
-    </div>
-  {{/if}}
+<select
+  class="category-selection"
+  onchange={{action (mut selectedCategory) value="target.value"}}
+>
+  {{#each categories as |category|}}
+    <option class="category" value="{{category}}">{{category}}</option>
+  {{/each}}
+</select>
+
+{{#if inCategory}}
+  <span class="p-footnote">This URL is already in the category
+    {{urls.configuredName}}, you can remove it by clicking the "Remove URL" button.</span>
+{{else}}
+  <span class="p-footnote">This URL is not in the category
+    {{urls.configuredName}}, you can add it by clicking the "Add URL" button.</span>
 {{/if}}
 
-{{! block for credentials on user object  }}
-{{#if details.user.credentials}}
-  <h1 class="p-title">{{fa-icon icon="layer-group" fixedWidth=true}}
-    User Credentials:
-  </h1>
-  {{#if details.user.credentials.provider.type}}
-    <div>
-      <span class="p-key">Provider Type: </span>
-      <span class="p-value">{{details.user.credentials.provider.type}}</span>
-    </div>
-  {{/if}}
-  {{#if details.user.credentials.provider.name}}
-    <div>
-      <span class="p-key">Provider Name: </span>
-      <span class="p-value">{{details.user.credentials.provider.name}}</span>
-    </div>
-    {{#each details.user.credentials.emails as |email|}}
-      {{#if email.value}}
-        <div>
-          <span class="p-key">Email: </span>
-          <span class="p-value">{{email.value}}</span>
-        </div>
-      {{/if}}
-      {{#if email.type}}
-        <div>
-          <span class="p-key">Email Type: </span>
-          <span class="p-value">{{email.type}}</span>
-        </div>
-      {{/if}}
-      {{#if email.status}}
-        <div>
-          <span class="p-key">Email Status: </span>
-          <span class="p-value">{{email.status}}</span>
-        </div>
-      {{/if}}
-    {{/each}}
-  {{/if}}
-{{/if}}
-
-{{#if details.userGroup}}
-  <h1 class="p-title">{{fa-icon icon="layer-group" fixedWidth=true}} User Group: </h1>
-  <div class="scrollable-block">
-    <table>
-      <tbody>
-        {{#each details.userGroup as |group|}}
-          <div class="user-group">
-            <div>
-              <span class="p-key">Profile Name: </span>
-              <span class="p-value">{{group.profile.name}}</span>
-            </div>
-
-            <div>
-              <span class="p-key">Description: </span>
-              <span class="p-value">{{group.profile.description}}</span>
-            </div>
-
-            {{#if group.created}}
-              <div>
-                <span class="p-key">Group Created: </span>
-                <span class="p-value">{{{moment-format
-                    indicator.created_on
-                    "MM/DD/YYYY HH:mm:ss"
-                    timeZone=timezone
-                  }}}
-                </span>
-              </div>
-            {{/if}}
-
-            {{#if group.lastMembershipUpdated}}
-              <div>
-                <span class="p-key">Last Membership Update: </span>
-                <span class="p-value">{{moment-format
-                    indicator.created_on
-                    "MM/DD/YYYY HH:mm:ss"
-                    timeZone=timezone
-                  }}</span>
-              </div>
-            {{/if}}
-
-            {{#if group.lastUpdated}}
-              <div>
-                <span class="p-key">Last Updated: </span>
-                <span class="p-value">{{moment-format
-                    indicator.created_on
-                    "MM/DD/YYYY HH:mm:ss"
-                    timeZone=timezone
-                  }}</span>
-              </div>
-            {{/if}}
-          </div>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
-{{/if}}
+<div class="button-container">
+  <button class="add-url" {{action "addUrl"}}>Add URL</button>
+  <button class="remove-url" {{action "removeUrl"}}>Remove URL</button>
+</div>
