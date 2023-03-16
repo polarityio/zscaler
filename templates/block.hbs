@@ -1,22 +1,42 @@
-<select
-  class="category-selection"
-  onchange={{action "categoryLookup"}}
-  value="target.value"
->
-  {{#each categories as |category|}}
-    <option class="category" value="{{category}}">{{category}}</option>
-  {{/each}}
-</select>
+{{#if categories}}
+  <select
+    class="category-selection"
+    onchange={{action "categoryLookup"}}
+    value="target.value"
+  >
+    {{#each categories as |category|}}
+      <option class="category" value="{{category}}">{{category}}</option>
+    {{/each}}
+  </select>
 
-{{#if inCategory}}
-  <span class="p-footnote">This URL is already in the category
-    {{urls.configuredName}}, you can remove it by clicking the "Remove URL" button.</span>
-{{else}}
-  <span class="p-footnote">This URL is not in the category
-    {{urls.configuredName}}, you can add it by clicking the "Add URL" button.</span>
+  {{#if inCategory}}
+    <span class="p-footnote">This URL is already in the category
+      {{urls.configuredName}}, you can remove it by clicking the "Remove URL" button.</span>
+  {{else}}
+    <span class="p-footnote">This URL is not in the category
+      {{urls.configuredName}}, you can add it by clicking the "Add URL" button.</span>
+  {{/if}}
+
+  <div class="button-container">
+    <button class="add-url" {{action "addUrl"}}>
+      {{#if isRunning}}
+        {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
+      {{else}}
+        Add URL
+      {{/if}}
+    </button>
+    <button class="remove-url" {{action "removeUrl"}}>
+      {{#if isRunning}}
+        {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
+      {{else}}
+        Remove URL
+      {{/if}}
+    </button>
+  </div>
+
+  {{#if addUrlErrorMessage}}
+    <div class="alert alert-danger mt-1">
+      {{addUrlErrorMessage}}
+    </div>
+  {{/if}}
 {{/if}}
-
-<div class="button-container">
-  <button class="add-url" {{action "addUrl"}}>Add URL</button>
-  <button class="remove-url" {{action "removeUrl"}}>Remove URL</button>
-</div>

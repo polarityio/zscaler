@@ -7,7 +7,7 @@ const { polarityRequest } = require('./src/polarity-request');
 const { categoryLookup } = require('./src/category-lookup');
 const { createResultObject } = require('./src/create-result-object');
 const { obfuscateApiKey } = require('./src/obfuscate-api-key');
-const { AuthRequestError } = require('./src/errors');
+const { AuthRequestError, parseErrorToReadableJSON } = require('./src/errors');
 const { addUrl } = require('./src/add-url');
 const { removeUrl } = require('./src/remove-url');
 
@@ -24,6 +24,8 @@ const startup = (logger) => {
  * @param cb
  * @returns {Promise<void>}
  */
+
+//TODO: cache the token, and the category data when the user selects a category */
 
 async function doLookup (entities, options, cb) {
   try {
@@ -83,19 +85,33 @@ async function createSession (options) {
 async function onMessage (payload, options, cb) {
   const Logger = getLogger();
   Logger.trace({ payload }, 'Payload');
+  try {
+    switch (payload.action) {
+      case 'CATEGORY_LOOKUP':
+        cb(null, await categoryLookup(payload));
+        break;
+      case 'ADD_URL':
+        cb(null, await addUrl(payload));
+        break;
+      case 'REMOVE_URL':
+        cb(null, await removeUrl(payload));
+        break;
+      default:
+        cb(null, 'No action found');
+    }
+  } catch (error) {
+    if (error instanceof AuthRequestError) {
+      // this needs to be fixed, there is bugs in the code.
+      delete polarityRequest.headers['cookie'];
+      const session = await createSession(polarityRequest.options);
+      polarityRequest.setHeader('cookie', session.headers['set-cookie']);
 
-  switch (payload.action) {
-    case 'CATEGORY_LOOKUP':
-      cb(null, await categoryLookup(payload));
-      break;
-    case 'ADD_URL':
-      cb(null, await addUrl(payload));
-      break;
-    case 'REMOVE_URL':
-      cb(null, await removeUrl(payload));
-      break;
-    default:
-      cb(null, 'No action found');
+      return polarityRequest.send(polarityRequest.requestOptions);
+    }
+
+    const errorAsPojo = parseErrorToReadableJSON(error);
+    Logger.error({ error: errorAsPojo }, 'Error in onMessage');
+    cb(errorAsPojo);
   }
 }
 

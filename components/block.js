@@ -4,7 +4,6 @@ polarity.export = PolarityComponent.extend({
   categories: '',
   isRunning: false,
   selectedCategory: '',
-  addUrlErrorMessage: '',
   addUrlMessage: '',
   removeUrlErrorMessage: '',
   removeUrlMessage: '',
@@ -16,17 +15,14 @@ polarity.export = PolarityComponent.extend({
     const categories = this.get('block.userOptions.categories');
     const list = categories.split(',');
     // set the first category in the user options list as the default
-    this.set('selectedCategory', this.get('block.userOptions.categories')[0]);
+    this.set('selectedCategory', list[0]);
     this.set('categories', list);
 
     this._super(...arguments);
   },
   actions: {
-    addUrl: async function (value) {
-      console.log(value);
+    addUrl: async function () {
       this.set('isRunning', true);
-
-      this.get();
 
       this.sendIntegrationMessage({
         action: 'ADD_URL',
@@ -42,10 +38,13 @@ polarity.export = PolarityComponent.extend({
           }
         })
         .catch((err) => {
-          this.set('addUrlErrorMessage', `${err}`);
+          this.set('addUrlErrorMessage', 'ADASDSASS');
+          console.log(err.meta.detail);
+          console.log(this.get('addUrlErrorMessage'));
         })
         .finally(() => {
           this.set('isRunning', false);
+          this.set('addUrlErrorMessage', '');
           this.get('block').notifyPropertyChange('data');
         });
     },
@@ -66,10 +65,11 @@ polarity.export = PolarityComponent.extend({
           }
         })
         .catch((err) => {
-          this.set('removeUrlErrorMessage', `${err}`);
+          this.set('removeUrlErrorMessage', `${err.meta.detail}`);
         })
         .finally(() => {
           this.set('isRunning', false);
+          this.set('removeUrlErrorMessage', '');
           this.get('block').notifyPropertyChange('data');
         });
     },
@@ -91,7 +91,12 @@ polarity.export = PolarityComponent.extend({
           this.set('configuredName', response[0].result.body.configuredName);
         })
         .catch((err) => {
-          this.set('categoryLookupErrorMessage', `${err}`);
+          this.set('categoryLookupErrorMessage', `${err.meta.detail}`);
+        })
+        .finally(() => {
+          this.set('isRunning', false);
+          this.set('categoryLookupErrorMessage', '');
+          this.get('block').notifyPropertyChange('data');
         });
     }
   }

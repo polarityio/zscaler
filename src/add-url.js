@@ -4,19 +4,27 @@ const { getLogger } = require('./logger');
 async function addUrl (payload) {
   const Logger = getLogger();
 
-  Logger.trace({ data: payload.data.category }, 'DDDDDD');
+  try {
+    Logger.trace({ data: payload.data.category }, 'DDDDDD');
 
-  const response = await polarityRequest.send({
-    method: 'PUT',
-    path: `/api/v1/urlCategories/${payload.data.category.trim()}?action=ADD_TO_LIST`,
-    body: {
-      configuredName: payload.data.configuredName,
-      urls: [payload.data.entity.value]
-    }
-  });
+    const CATEGORY = payload.data.category.trim();
 
-  Logger.trace({ response }, 'URL Lookup api response');
-  return response;
+    Logger.trace({ data: payload.data.category }, 'DDDDDD');
+
+    const response = await polarityRequest.send({
+      method: 'PUT',
+      path: `/api/v1/urlCategories/${CATEGORY}?action=ADD_TO_LIST`,
+      body: {
+        configuredName: payload.data.configuredName,
+        urls: [payload.data.entity.value]
+      }
+    });
+
+    Logger.trace({ response }, 'URL Lookup api response');
+    return response;
+  } catch (error) {
+    throw error;
+  }
 }
 
 module.exports = { addUrl };

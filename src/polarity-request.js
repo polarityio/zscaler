@@ -81,17 +81,17 @@ class PolarityRequest {
    * @param requestOptions  - the request options to pass to postman-request. It will either being an array of requests or a single request.
    * @returns {{Promise<*>} || {Promise<Array<*>>}}- returns a promise that resolves to the response from the request
    */
-  async request (opts) {
+  async request (reqOpts) {
     const Logger = getLogger();
 
-    const reqOpts = {
-      method: opts.method,
-      url: this.options.url + opts.path,
+    const requestOptionsObj = {
+      method: reqOpts.method,
+      url: this.options.url + reqOpts.path,
       headers: this.headers,
-      ...opts
+      ...reqOpts
     };
 
-    const { path, ...requestOptions } = reqOpts;
+    const { path, ...requestOptions } = requestOptionsObj;
     Logger.trace({ requestOptions }, 'Request Options');
 
     // CHANGE THIS: set the request options so that we can use it in the retry logic
@@ -146,19 +146,12 @@ class PolarityRequest {
             )
           );
         }
-
+        // need to fix this case, it is not working
         if (statusCode === HTTP_CODE_NOT_FOUND_404) {
-          response.result.body = null; // set the body to null so that the caller doesn't have to check for it
           return resolve({ ...response, requestOptions });
         }
 
         if (statusCode === HTTP_CODE_API_LIMIT_REACHED_429) {
-          this.retries += 1;
-
-          if (this.retries <= 3) {
-            return this.send(this.requestOptions);
-          }
-
           return reject(
             new RetryRequestError(
               `API Limit Error: Exceeded the rate limit or quota. Please try again later.`,
@@ -177,7 +170,7 @@ class PolarityRequest {
             statusCode === HTTP_CODE_SERVER_LIMIT_504
           ) {
             return reject(
-              new NetworkError(
+              new RetryRequestError(
                 `Network Error: an unexpected error has occurred, Or
                  the Zscaler API is currently unavailable. Please try again later.`,
                 {
