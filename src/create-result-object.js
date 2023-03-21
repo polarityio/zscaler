@@ -7,36 +7,74 @@ const { getLogger } = require('./logger');
  * either pass in a single object or an array of objects, being
  * @returns {{data: null, entity}|{data: {summary: [string], details}, entity}}
  */
-const createResultObject = (arguments) => {
-  const Logger = getLogger();
-  Logger.trace({ arguments }, 'createResultObject arguments');
 
-  if (Object.keys(arguments).length <= 1) {
-    const { entity, result } = arguments;
+class PolarityResult {
+
+  
+  createEmptyBlock (entity) {
     return {
-      entity,
+      entity: entity,
       data: {
-        summary: createSummaryTags(result),
-        details: {
-          urls: result.body
-        }
-      }
-    };
-  } else {
-    return {
-      entity: arguments,
-      data: {
-        summary: [arguments.value],
+        summary: [],
         details: []
       }
     };
   }
-};
 
-const createSummaryTags = (result) => {
-  const tags = [];
-  tags.push(`Category: ${result.body.configuredName}`);
-  return tags;
-};
+  createResultsObject (apiResponse) {
+    const Logger = getLogger();
+    Logger.trace({ apiResponse }, 'createResultObject arguments');
+    return {
+      entity: apiResponse.entity,
+      data: {
+        summary: ['Data'],
+        details: apiResponse.result.body
+      }
+    };
+  }
 
-module.exports = { createResultObject };
+  createNoResultsObject () {
+    return {
+      entity: this.entity,
+      data: null
+    };
+  }
+}
+
+// const createResultObject = (arguments) => {
+//   const Logger = getLogger();
+//   Logger.trace({ arguments }, 'createResultObject arguments');
+
+//   const asdf = Object.keys(arguments).length;
+//   Logger.trace({ asdf }, 'cASDASDASSDASs');
+
+//   if (Object.keys(arguments).length >= 1) {
+//     const { entity, result } = arguments;
+//     Logger.trace({ entity, result }, 'createResultObject arguments');
+//     return {
+//       entity,
+//       data: {
+//         summary: [],
+//         details: {
+//           urls: result.body
+//         }
+//       }
+//     };
+//   } else {
+//     return {
+//       entity: arguments,
+//       data: {
+//         summary: [arguments.value],
+//         details: []
+//       }
+//     };
+//   }
+// };
+
+// const createSummaryTags = (result) => {
+//   const tags = [];
+//   tags.push(`Category: ${result.body.configuredName}`);
+//   return tags;
+// };
+
+module.exports = { PolarityResult };

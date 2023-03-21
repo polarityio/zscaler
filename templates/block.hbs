@@ -9,27 +9,38 @@
     {{/each}}
   </select>
 
-  {{#if inCategory}}
-    <span class="p-footnote">This URL is already in the category
-      {{urls.configuredName}}, you can remove it by clicking the "Remove URL" button.</span>
-  {{else}}
-    <span class="p-footnote">This URL is not in the category
-      {{urls.configuredName}}, you can add it by clicking the "Add URL" button.</span>
+  {{#if loadingCategory}}
+    <div class="loading">
+      <span>Retrieving Category</span>
+      <span class="dot dot-1"></span>
+      <span class="dot dot-2"></span>
+      <span class="dot dot-3"></span>
+    </div>
+  {{/if}}
+
+  {{#if showCategoryMessage}}
+    {{#if inCategory}}
+      <span class="p-footnote">This URL is already in the category
+        {{selectedCategory}}, you can remove it by clicking the "Remove URL" button.</span>
+    {{else}}
+      <span class="p-footnote">This URL is not in the category
+        {{selectedCategory}}, you can add it by clicking the "Add URL" button.</span>
+    {{/if}}
   {{/if}}
 
   <div class="button-container">
-    <button class="add-url" {{action "addUrl"}}>
-      {{#if isRunning}}
-        {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
-      {{else}}
-        Add URL
-      {{/if}}
-    </button>
-    <button class="remove-url" {{action "removeUrl"}}>
-      {{#if isRunning}}
+    <button class="remove-url" disabled={{disableRemoveUrlButton}} {{action "removeUrl"}}>
+      {{#if removeButtonIsRunning}}
         {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
       {{else}}
         Remove URL
+      {{/if}}
+    </button>
+    <button class="add-url" disabled={{disableAddUrlButton}} {{action "addUrl"}}>
+      {{#if addButtonIsRunning}}
+        {{fa-icon icon="spinner-third" fixedWidth=true spin=true}}
+      {{else}}
+        Add URL
       {{/if}}
     </button>
   </div>

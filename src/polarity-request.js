@@ -11,7 +11,7 @@ const {
   request: { ca, cert, key, passphrase, rejectUnauthorized, proxy }
 } = require('../config/config.js');
 const { map } = require('lodash/fp');
-const { parallelLimit } = require('async');
+const { parallelLimit, retry } = require('async');
 
 const _configFieldIsValid = (field) => typeof field === 'string' && field.length > 0;
 
@@ -45,7 +45,8 @@ class PolarityRequest {
     this.requestOptions = {};
     this.headers = {};
     this.options = {};
-    this.retries = 0;
+    this.MAX_RETRIES = 0;
+    this.currentRetries = 0;
   }
   /**
    * Set header `field` to `val`, or pass
@@ -94,7 +95,6 @@ class PolarityRequest {
     const { path, ...requestOptions } = requestOptionsObj;
     Logger.trace({ requestOptions }, 'Request Options');
 
-    // CHANGE THIS: set the request options so that we can use it in the retry logic
     this.requestOptions = requestOptions;
 
     return new Promise((resolve, reject) => {
@@ -163,6 +163,7 @@ class PolarityRequest {
           );
         }
 
+        //TODO: add retry logic for 500, 502, 504s
         if (err) {
           if (
             statusCode === HTTP_CODE_SERVER_LIMIT_500 ||
@@ -204,6 +205,23 @@ class PolarityRequest {
 
     return parallelLimit(unexecutedRequestFunctions, limit);
   }
+
+  // async handleRetry (err) {
+  //   const Logger = getLogger();
+  //   Logger.trace({ err }, 'Handling Retry');
+
+  //   if (err instanceof RetryRequestError) {
+  //     if (this.currentRetries < MAX_RETRIES) {
+  //       this.currentRetries++;
+  //       const response = this.request(this.requestOptions);
+  //       if (response && response.statusCode === HTTP_CODE_SUCCESS_200) {
+  //         this.currentRetries = 0;
+  //       }
+  //     } else {
+  //       throw err;
+  //     }
+  //   }
+  // }
 
   async send (requestOptions) {
     const Logger = getLogger();

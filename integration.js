@@ -4,10 +4,10 @@ const { map } = require('lodash/fp');
 
 const { setLogger, getLogger } = require('./src/logger');
 const { polarityRequest } = require('./src/polarity-request');
-const { categoryLookup } = require('./src/category-lookup');
-const { createResultObject } = require('./src/create-result-object');
 const { obfuscateApiKey } = require('./src/obfuscate-api-key');
-const { AuthRequestError, parseErrorToReadableJSON } = require('./src/errors');
+const { parseErrorToReadableJSON } = require('./src/errors');
+const { categoryLookup } = require('./src/category-lookup');
+const { PolarityResult } = require('./src/create-result-object');
 const { addUrl } = require('./src/add-url');
 const { removeUrl } = require('./src/remove-url');
 
@@ -25,13 +25,14 @@ const startup = (logger) => {
  * @returns {Promise<void>}
  */
 
-//TODO: cache the token, and the category data when the user selects a category */
-
+//TODO: cache the token, and the category data when the user selects a category
+//TODO: add validate options functions
 async function doLookup (entities, options, cb) {
   try {
     const Logger = getLogger();
 
     polarityRequest.setOptions(options);
+    polarityRequest.MAX_RETRIES = 3;
     polarityRequest.setHeader({
       'Content-Type': 'application/json'
     });
@@ -44,20 +45,26 @@ async function doLookup (entities, options, cb) {
      this is creating results with no data, this is specific to this integration. 
      we just want the blocks to be rendered in the overlay without making any api calls.
     */
-    const lookupResults = map((entity) => createResultObject(entity), entities);
+    const polarityResult = new PolarityResult();
+    const lookupResults = map(
+      (entity) => polarityResult.createEmptyBlock(entity),
+      entities
+    );
     Logger.trace({ lookupResults }, 'Lookup Results');
-
     return cb(null, lookupResults);
   } catch (error) {
     if (error instanceof AuthRequestError) {
-      // this needs to be fixed, there is bugs in the code.
-      delete polarityRequest.headers['cookie'];
-      const session = await createSession(polarityRequest.options);
-      polarityRequest.setHeader('cookie', session.headers['set-cookie']);
-
-      return polarityRequest.send(polarityRequest.requestOptions);
+      if (polarityRequest.currentRetries < polarityRequest.MAX_RETRIES) {
+        delete polarityRequest.headers['cookie'];
+        const session = await createSession(options);
+        polarityRequest.setHeader('cookie', session.headers['set-cookie']);
+        polarityRequest.currentRetries++;
+        /* 
+         after we create a new session, we call the request again with the same options.
+        */
+        return polarityRequest.send(polarityRequest.requestOptions);
+      }
     }
-
     const errorAsPojo = parseErrorToReadableJSON(error);
     Logger.error({ error: errorAsPojo }, 'Error in doLookup');
     cb(errorAsPojo);
@@ -78,6 +85,7 @@ async function createSession (options) {
       timestamp
     }
   };
+
   const session = await polarityRequest.request(sessionRequestOptions);
   return session;
 }
@@ -100,15 +108,10 @@ async function onMessage (payload, options, cb) {
         cb(null, 'No action found');
     }
   } catch (error) {
-    if (error instanceof AuthRequestError) {
-      // this needs to be fixed, there is bugs in the code.
-      delete polarityRequest.headers['cookie'];
-      const session = await createSession(polarityRequest.options);
-      polarityRequest.setHeader('cookie', session.headers['set-cookie']);
-
-      return polarityRequest.send(polarityRequest.requestOptions);
-    }
-
+    /* 
+      removed the AuthRequestError for now, don't want to call session in here, 
+      need to handle expiring auth token
+    */
     const errorAsPojo = parseErrorToReadableJSON(error);
     Logger.error({ error: errorAsPojo }, 'Error in onMessage');
     cb(errorAsPojo);
@@ -120,21 +123,3 @@ module.exports = {
   doLookup,
   onMessage
 };
-
-// const validateOption = (errors, options, optionName, errMessage) => {
-//   if (!(typeof options[optionName].value === 'string' && options[optionName].value)) {
-//     errors.push({
-//       key: optionName,
-//       message: errMessage
-//     });
-//   }
-// };
-
-// const validateOptions = (options, callback) => {
-//   let errors = [];
-
-//   validateOption(errors, options, 'url', 'You must provide an api url.');
-//   validateOption(errors, options, 'apiToken', 'You must provide a valid access key.');
-
-//   callback(null, errors);
-// };

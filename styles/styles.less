@@ -47,3 +47,57 @@ button {
   border-radius: 8px;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #005f99;
+  color: #ccc;
+}
+
+.loading {
+  align-items: center;
+  height: 40px;
+}
+
+.loading span {
+  font-size: 10px;
+  margin-right: 10px;
+}
+
+.dot {
+  height: 3px;
+  width: 3px;
+  border-radius: 10%;
+  display: inline-block;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.dot-1 {
+  background-color: #4caf50;
+  animation-delay: 0s;
+}
+
+.dot-2 {
+  background-color: #4caf50;
+  animation-delay: 0.5s;
+}
+
+.dot-3 {
+  background-color: #4caf50;
+  animation-delay: 1s;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+}

@@ -1,19 +1,24 @@
 polarity.export = PolarityComponent.extend({
   details: Ember.computed.alias('block.data.details'),
   urls: Ember.computed.alias('block.data.details.urls'),
+  inCategory: Ember.computed.alias('block.data.details.inCategory'),
   categories: '',
-  isRunning: false,
   selectedCategory: '',
   addUrlMessage: '',
   removeUrlErrorMessage: '',
   removeUrlMessage: '',
+  disableAddUrlButton: true,
+  disableRemoveUrlButton: true,
   categoryLookupErrorMessage: '',
+  showCategoryMessage: false,
   timezone: Ember.computed('Intl', function () {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }),
   init () {
     const categories = this.get('block.userOptions.categories');
     const list = categories.split(',');
+    // add a default option to the beginning of the list.
+    list.unshift('Select a Category');
     // set the first category in the user options list as the default
     this.set('selectedCategory', list[0]);
     this.set('categories', list);
@@ -22,7 +27,7 @@ polarity.export = PolarityComponent.extend({
   },
   actions: {
     addUrl: async function () {
-      this.set('isRunning', true);
+      this.set('addButtonIsRunning', true);
 
       this.sendIntegrationMessage({
         action: 'ADD_URL',
@@ -38,18 +43,17 @@ polarity.export = PolarityComponent.extend({
           }
         })
         .catch((err) => {
-          this.set('addUrlErrorMessage', 'ADASDSASS');
-          console.log(err.meta.detail);
-          console.log(this.get('addUrlErrorMessage'));
+          // this.set('addUrlErrorMessage', 'ADASDSASS');
+          this.set('addButtonIsRunning', true);
         })
         .finally(() => {
-          this.set('isRunning', false);
+          this.set('addButtonIsRunning', false);
           this.set('addUrlErrorMessage', '');
           this.get('block').notifyPropertyChange('data');
         });
     },
     removeUrl: async function () {
-      this.set('isRunning', true);
+      this.set('removeButtonIsRunning', true);
 
       this.sendIntegrationMessage({
         action: 'REMOVE_URL',
@@ -65,10 +69,11 @@ polarity.export = PolarityComponent.extend({
           }
         })
         .catch((err) => {
+          this.set('removeButtonIsRunning', false);
           this.set('removeUrlErrorMessage', `${err.meta.detail}`);
         })
         .finally(() => {
-          this.set('isRunning', false);
+          this.set('removeButtonIsRunning', false);
           this.set('removeUrlErrorMessage', '');
           this.get('block').notifyPropertyChange('data');
         });
@@ -76,6 +81,10 @@ polarity.export = PolarityComponent.extend({
     categoryLookup: function (event) {
       const category = event.target.value;
       this.set('selectedCategory', category);
+      this.set('loadingCategory', true);
+      this.set('disableAddUrlButton', true);
+      this.set('disableRemoveUrlButton', true);
+      this.set('showCategoryMessage', true);
 
       this.sendIntegrationMessage({
         action: 'CATEGORY_LOOKUP',
@@ -94,7 +103,15 @@ polarity.export = PolarityComponent.extend({
           this.set('categoryLookupErrorMessage', `${err.meta.detail}`);
         })
         .finally(() => {
-          this.set('isRunning', false);
+          const isInCategory = this.get('inCategory');
+
+          if (isInCategory) {
+            this.set('disableRemoveUrlButton', false);
+          } else if (!isInCategory) {
+            this.set('disableAddUrlButton', false);
+          }
+
+          this.set('loadingCategory', false);
           this.set('categoryLookupErrorMessage', '');
           this.get('block').notifyPropertyChange('data');
         });

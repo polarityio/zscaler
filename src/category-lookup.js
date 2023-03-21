@@ -19,7 +19,9 @@ async function categoryLookup (payload) {
 
   const response = await polarityRequest.send(requestOptions);
   Logger.trace({ response }, 'URL Lookup api response');
-
+  /* setting a property on the response object to indicate if the domain is in the category. 
+     this is used to determine if the add or remove button should be displayed in the overlay.
+  */
   for (const obj of response) {
     if (domainIsInCategory(obj)) {
       obj.result.body.inCategory = true;
