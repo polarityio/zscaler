@@ -14,7 +14,7 @@ polarity.export = PolarityComponent.extend({
   timezone: Ember.computed('Intl', function () {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }),
-  init () {
+  init() {
     const categories = this.get('block.userOptions.categories');
     const list = categories.split(',');
     // add a default option to the beginning of the list.
@@ -48,6 +48,8 @@ polarity.export = PolarityComponent.extend({
         })
         .finally(() => {
           this.set('addButtonIsRunning', false);
+          this.set('disableAddUrlButton', true);
+          this.set('inCategory', true);
           this.set('addUrlErrorMessage', '');
           this.get('block').notifyPropertyChange('data');
         });
@@ -118,3 +120,5 @@ polarity.export = PolarityComponent.extend({
     }
   }
 });
+
+//

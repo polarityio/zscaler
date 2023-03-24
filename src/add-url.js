@@ -1,7 +1,7 @@
 const { polarityRequest } = require('./polarity-request');
 const { getLogger } = require('./logger');
 
-async function addUrl (payload) {
+async function addUrl(payload) {
   const Logger = getLogger();
 
   try {
@@ -13,10 +13,13 @@ async function addUrl (payload) {
 
     const response = await polarityRequest.send({
       method: 'PUT',
-      path: `/api/v1/urlCategories/${CATEGORY}?action=ADD_TO_LIST`,
+      path: `/api/v1/urlCategories/MUSIC?action=ADD_TO_LIST`,
       body: {
-        configuredName: payload.data.configuredName,
-        urls: [payload.data.entity.value]
+        // configuredName: payload.data.configuredName,
+        // urls: [payload.data.entity.value]
+        // id: 'CUSTOM_1',
+        superCategory: 'ENTERTAINMENT_AND_RECREATION',
+        dbCategorizedUrls: ['test5.com']
       }
     });
 

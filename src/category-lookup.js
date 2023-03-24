@@ -4,7 +4,7 @@ const { find } = require('lodash/fp');
 
 //ideally, we would cache the results of this function, as it is going to be called
 // anytime a user selects a category from the dropdown.
-async function categoryLookup (payload) {
+async function categoryLookup(payload) {
   const Logger = getLogger();
 
   Logger.trace({ payload }, 'Payload');
@@ -19,7 +19,8 @@ async function categoryLookup (payload) {
 
   const response = await polarityRequest.send(requestOptions);
   Logger.trace({ response }, 'URL Lookup api response');
-  /* setting a property on the response object to indicate if the domain is in the category. 
+  /* 
+      setting a property on the response object to indicate if the domain is in the category. 
      this is used to determine if the add or remove button should be displayed in the overlay.
   */
   for (const obj of response) {
@@ -34,7 +35,7 @@ async function categoryLookup (payload) {
   return response;
 }
 
-function domainIsInCategory (response) {
+function domainIsInCategory(response) {
   const value = response.entity.value;
   const dbCategorizedUrls = response.result.body.dbCategorizedUrls;
 
