@@ -4,36 +4,45 @@ const { getLogger } = require('./logger');
 async function addUrl(payload) {
   const Logger = getLogger();
 
-  try {
-    Logger.trace({ data: payload.data.category }, 'DDDDDD');
+  const CATEGORY = payload.data.category.trim();
+  const CONFIGURED_NAME = payload.data.configuredName;
 
-    const CATEGORY = payload.data.category.trim();
+  const response = await polarityRequest.send({
+    method: 'PUT',
+    path: `/api/v1/urlCategories/${CATEGORY}?action=ADD_TO_LIST`,
+    body: {
+      id: CATEGORY,
+      configuredName: CONFIGURED_NAME,
+      dbCategorizedUrls: [payload.data.entity.value]
+    }
+  });
 
-    Logger.trace({ data: payload.data.category }, 'DDDDDD');
-
-    const response = await polarityRequest.send({
-      method: 'PUT',
-      path: `/api/v1/urlCategories/MUSIC?action=ADD_TO_LIST`,
-      body: {
-        // configuredName: payload.data.configuredName,
-        // urls: [payload.data.entity.value]
-        // id: 'CUSTOM_1',
-        superCategory: 'ENTERTAINMENT_AND_RECREATION',
-        dbCategorizedUrls: ['test5.com']
-      }
-    });
-
-    Logger.trace({ response }, 'URL Lookup api response');
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  Logger.trace({ response }, 'URL Lookup api response');
+  return response;
 }
 
-module.exports = { addUrl };
+//TODO: going to leave this here for testing until add/remove url from predefined categories is working
+// async function addUrl(payload) {
+//   const Logger = getLogger();
 
-// set default category
-// fix add url
-// add super category as a user option
-// error messages, template, styles.
-// fix footnotes in the overlay
+//   try {
+//     const CATEGORY = payload.data.category.trim();
+//     const CONFIGURED_NAME = payload.data.configuredName;
+
+//     const response = await polarityRequest.send({
+//       method: 'PUT',
+//       path: `/api/v1/urlCategories/ENTERTAINMENT_AND_RECREATION?action=ADD_TO_LIST`,
+//       body: {
+//         superCategory: 'OTHER_ENTERTAINMENT_AND_RECREATION',
+//         dbCategorizedUrls: [payload.data.entity.value]
+//       }
+//     });
+
+//     Logger.trace({ response }, 'URL Lookup api response');
+//     return response;
+//   } catch (error) {
+//     throw error;
+//   }
+// }
+
+module.exports = { addUrl };

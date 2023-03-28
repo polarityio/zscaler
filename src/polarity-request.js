@@ -11,7 +11,7 @@ const {
   request: { ca, cert, key, passphrase, rejectUnauthorized, proxy }
 } = require('../config/config.js');
 const { map } = require('lodash/fp');
-const { parallelLimit, retry } = require('async');
+const { parallelLimit } = require('async');
 
 const _configFieldIsValid = (field) => typeof field === 'string' && field.length > 0;
 
@@ -40,9 +40,9 @@ const HTTP_CODE_SERVER_LIMIT_502 = 502;
 const HTTP_CODE_SERVER_LIMIT_504 = 504;
 
 class PolarityRequest {
-  constructor () {
+  constructor() {
     this.requestWithDefaults = request.defaults(defaults);
-    this.requestOptions = {};
+    // this.requestOptions = {};
     this.headers = {};
     this.options = {};
     this.MAX_RETRIES = 0;
@@ -61,7 +61,7 @@ class PolarityRequest {
    * @param {String|Array} val
    * @public
    */
-  setHeader (field, value) {
+  setHeader(field, value) {
     const Logger = getLogger();
     // need to add mime type to the request in a generic way
     if (arguments.length === 2) {
@@ -74,7 +74,7 @@ class PolarityRequest {
     }
   }
 
-  setOptions (options) {
+  setOptions(options) {
     this.options = options;
   }
   /**
@@ -82,7 +82,7 @@ class PolarityRequest {
    * @param requestOptions  - the request options to pass to postman-request. It will either being an array of requests or a single request.
    * @returns {{Promise<*>} || {Promise<Array<*>>}}- returns a promise that resolves to the response from the request
    */
-  async request (reqOpts) {
+  async request(reqOpts) {
     const Logger = getLogger();
 
     const requestOptionsObj = {
@@ -95,7 +95,7 @@ class PolarityRequest {
     const { path, ...requestOptions } = requestOptionsObj;
     Logger.trace({ requestOptions }, 'Request Options');
 
-    this.requestOptions = requestOptions;
+    // this.requestOptions = requestOptions;
 
     return new Promise((resolve, reject) => {
       this.requestWithDefaults(requestOptions, async (err, response) => {
@@ -108,6 +108,7 @@ class PolarityRequest {
           statusCode === HTTP_CODE_SUCCESS_202
         ) {
           return resolve({ ...response, requestOptions });
+          // return reject(new ApiRequestError('test', { statusCode, requestOptions }));
         }
 
         if (statusCode === HTTP_CODE_BAD_REQUEST_400) {
@@ -146,14 +147,20 @@ class PolarityRequest {
             )
           );
         }
-        // need to fix this case, it is not working
+        /* typically integrations return  a null value for the data property when a resource is not found.
+           However, I think for this integration, it would be better to throw an error so the user knows that the category they had listed does not exist.
+        */
         if (statusCode === HTTP_CODE_NOT_FOUND_404) {
-          return resolve({ ...response, requestOptions });
+          return reject(
+            new ApiRequestError(
+              `API Request Error: The requested resource was not found. Check that the category you have listed is valid.`
+            )
+          );
         }
 
         if (statusCode === HTTP_CODE_API_LIMIT_REACHED_429) {
           return reject(
-            new RetryRequestError(
+            new ApiRequestError(
               `API Limit Error: Exceeded the rate limit or quota. Please try again later.`,
               {
                 statusCode,
@@ -164,29 +171,27 @@ class PolarityRequest {
         }
 
         //TODO: add retry logic for 500, 502, 504s
-        if (err) {
-          if (
-            statusCode === HTTP_CODE_SERVER_LIMIT_500 ||
-            statusCode === HTTP_CODE_SERVER_LIMIT_502 ||
-            statusCode === HTTP_CODE_SERVER_LIMIT_504
-          ) {
-            return reject(
-              new RetryRequestError(
-                `Network Error: an unexpected error has occurred, Or
-                 the Zscaler API is currently unavailable. Please try again later.`,
-                {
-                  cause: err,
-                  requestOptions
-                }
-              )
-            );
-          }
+        if (
+          statusCode === HTTP_CODE_SERVER_LIMIT_500 ||
+          statusCode === HTTP_CODE_SERVER_LIMIT_502 ||
+          statusCode === HTTP_CODE_SERVER_LIMIT_504
+        ) {
+          return reject(
+            new NetworkError(
+              `Network Error: an unexpected error has occurred, Or
+               the Zscaler API is currently unavailable. Please try again later.`,
+              {
+                cause: err,
+                requestOptions
+              }
+            )
+          );
         }
       });
     });
   }
 
-  async runRequestsInParallel (requestOptions, limit = 10) {
+  async runRequestsInParallel(requestOptions, limit = 10) {
     const Logger = getLogger();
     Logger.trace({ requestOptions }, 'Request Options (before request)');
 
@@ -206,24 +211,7 @@ class PolarityRequest {
     return parallelLimit(unexecutedRequestFunctions, limit);
   }
 
-  // async handleRetry (err) {
-  //   const Logger = getLogger();
-  //   Logger.trace({ err }, 'Handling Retry');
-
-  //   if (err instanceof RetryRequestError) {
-  //     if (this.currentRetries < MAX_RETRIES) {
-  //       this.currentRetries++;
-  //       const response = this.request(this.requestOptions);
-  //       if (response && response.statusCode === HTTP_CODE_SUCCESS_200) {
-  //         this.currentRetries = 0;
-  //       }
-  //     } else {
-  //       throw err;
-  //     }
-  //   }
-  // }
-
-  async send (requestOptions) {
+  async send(requestOptions) {
     const Logger = getLogger();
     Logger.trace({ requestOptions }, 'Request Options (before request)');
     return await this.runRequestsInParallel(requestOptions);

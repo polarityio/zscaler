@@ -27,6 +27,8 @@ polarity.export = PolarityComponent.extend({
   },
   actions: {
     addUrl: async function () {
+      this.set('removeUrlErrorMessage', '');
+      this.set('addUrlErrorMessage', '');
       this.set('addButtonIsRunning', true);
 
       this.sendIntegrationMessage({
@@ -37,24 +39,28 @@ polarity.export = PolarityComponent.extend({
           configuredName: this.get('configuredName')
         }
       })
-        .then((response) => {
-          if (response.result.statusCode === 200) {
-            this.set('addUrlMessage', 'URL Added Successfully');
-          }
+        .then(() => {
+          this.set(
+            'addUrlMessage',
+            `URL Successfully Added to ${this.get('selectedCategory')}`
+          );
         })
         .catch((err) => {
-          // this.set('addUrlErrorMessage', 'ADASDSASS');
-          this.set('addButtonIsRunning', true);
+          this.set('addUrlErrorMessage', JSON.stringify(`${err.meta.detail}`));
+          this.set('showCategoryMessage', false);
         })
         .finally(() => {
-          this.set('addButtonIsRunning', false);
+          this.set('removeUrlMessage', '');
+          this.set('showCategoryMessage', false);
           this.set('disableAddUrlButton', true);
+          this.set('disableRemoveUrlButton', false);
+          this.set('addButtonIsRunning', false);
           this.set('inCategory', true);
-          this.set('addUrlErrorMessage', '');
-          this.get('block').notifyPropertyChange('data');
         });
     },
     removeUrl: async function () {
+      this.set('removeUrlErrorMessage', '');
+      this.set('addUrlErrorMessage', '');
       this.set('removeButtonIsRunning', true);
 
       this.sendIntegrationMessage({
@@ -65,34 +71,50 @@ polarity.export = PolarityComponent.extend({
           configuredName: this.get('configuredName')
         }
       })
-        .then((response) => {
-          if (response.result.statusCode === 200) {
-            this.set('removeUrlMessage', 'URL Removed Successfully');
-          }
+        .then(() => {
+          this.set(
+            'removeUrlMessage',
+            `URL Successfully Removed from ${this.get('selectedCategory')}`
+          );
         })
         .catch((err) => {
-          this.set('removeButtonIsRunning', false);
-          this.set('removeUrlErrorMessage', `${err.meta.detail}`);
+          this.set('removeUrlErrorMessage', JSON.stringify(`${err.meta.detail}`));
+          this.set('showCategoryMessage', false);
         })
         .finally(() => {
+          this.set('addUrlMessage', '');
           this.set('removeButtonIsRunning', false);
           this.set('removeUrlErrorMessage', '');
-          this.get('block').notifyPropertyChange('data');
+          this.set('showCategoryMessage', false);
+          this.set('disableAddUrlButton', false);
+          this.set('disableRemoveUrlButton', true);
         });
     },
     categoryLookup: function (event) {
+      this.set('removeUrlErrorMessage', '');
+      this.set('addUrlErrorMessage', '');
+      this.set('addUrlMessage', '');
+      this.set('removeUrlMessage', '');
+
       const category = event.target.value;
+      // just return, as we don't want to this make a request.
+      if (category === 'Select a Category') {
+        return;
+      }
+
       this.set('selectedCategory', category);
       this.set('loadingCategory', true);
       this.set('disableAddUrlButton', true);
       this.set('disableRemoveUrlButton', true);
+      this.set('removeUrlErrorMessage', '');
+      this.set('addUrlErrorMessage', '');
       this.set('showCategoryMessage', true);
 
       this.sendIntegrationMessage({
         action: 'CATEGORY_LOOKUP',
         data: {
           entity: this.get('block.entity'),
-          category: category
+          category: category.toUpperCase()
         }
       })
         .then((response) => {
@@ -121,4 +143,47 @@ polarity.export = PolarityComponent.extend({
   }
 });
 
-//
+// "body": {
+//   "id": "CUSTOM_02",
+//   "configuredName": "CISO-Chat-Allow",
+//   "superCategory": "USER_DEFINED",
+//   "keywords": [],
+//   "keywordsRetainingParentCategory": [],
+//   "urls": [],
+//   "dbCategorizedUrls": [
+//     "badguy.com",
+//     "twitter.com",
+//     "testalal.com",
+//     "thisisaverylongtesturlrequiredtocreatethecustomcategory.info",
+//     "anothertest.com",
+//     "testingaddingurls.com"
+//   ],
+//   "customCategory": true,
+//   "editable": true,
+//   "description": "CUSTOM_02_DESC",
+//   "type": "URL_CATEGORY",
+//   "val": 129,
+//   "customUrlsCount": 0,
+//   "urlsRetainingParentCategoryCount": 6,
+//   "customIpRangesCount": 0,
+//   "ipRangesRetainingParentCategoryCount": 0,
+//   "inCategory": "twitter.com"
+// }
+
+// "body": {
+//   "id": "OTHER_ENTERTAINMENT_AND_RECREATION",
+//   "superCategory": "ENTERTAINMENT_AND_RECREATION",
+//   "keywords": [],
+//   "keywordsRetainingParentCategory": [],
+//   "urls": [],
+//   "dbCategorizedUrls": [],
+//   "customCategory": false,
+//   "editable": false,
+//   "description": "OTHER_ENTERTAINMENT_AND_RECREATION_DESC",
+//   "type": "URL_CATEGORY",
+//   "val": 21,
+//   "customUrlsCount": 0,
+//   "urlsRetainingParentCategoryCount": 0,
+//   "customIpRangesCount": 0,
+//   "ipRangesRetainingParentCategoryCount": 0
+// }

@@ -9,17 +9,17 @@ const { getLogger } = require('./logger');
  */
 
 class PolarityResult {
-  createEmptyBlock (entity) {
+  createEmptyBlock(entity) {
     return {
       entity: entity,
       data: {
-        summary: [],
+        summary: ['Select a Category'],
         details: []
       }
     };
   }
 
-  createResultsObject (apiResponse) {
+  createResultsObject(apiResponse) {
     const Logger = getLogger();
     Logger.trace({ apiResponse }, 'createResultObject arguments');
     return {
@@ -31,7 +31,7 @@ class PolarityResult {
     };
   }
 
-  createNoResultsObject () {
+  createNoResultsObject() {
     return {
       entity: this.entity,
       data: null

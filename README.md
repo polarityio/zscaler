@@ -2,7 +2,8 @@
 
 ![image](https://img.shields.io/badge/status-beta-green.svg)
 
-Zscalar is a customizable, secure, and drop-in solution to add authentication and authorization services to your applications. The Polarity Zscalar integration allows you to search for Zscalar users by email address.
+Zscaler Internet Access (ZIA) is a cloud-based security solution that provides secure and direct access to the internet for users,
+protecting against cyber threats and ensuring compliance with organizational policies. It includes features such as web filtering, threat protection, and secure access service edge (SASE) capabilities.
 
 To learn more about Zscalar, visit the [official website](https://www.Zscalar.com/).
 
@@ -10,15 +11,15 @@ To learn more about Zscalar, visit the [official website](https://www.Zscalar.co
 
 ### Zscalar URL
 
-Your URL to access an Zscalar API instance.
+The URL for your Zscalar instance. The URL should include the scheme (https://).
 
 ### Zscalar API Token
 
-Your token issued by the authorization server (Zscalar).
+Enter the Zscalar API Token associated with your Zscalar account.
 
-## Default Domains to Search
+## Categories
 
-Enter a comma delimited list of domains that will be searched when doing email lookups in Zscalar. If left blank, all email addresses will be searched.
+A comma separated list of categories that can be used to add or remove urls from Zscalar. The first category in the list will be used as the default category.
 
 ## Installation Instructions
 
