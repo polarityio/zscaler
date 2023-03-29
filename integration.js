@@ -30,13 +30,29 @@ const startup = (logger) => {
 async function doLookup(entities, options, cb) {
   try {
     const Logger = getLogger();
+    const timestamp = new Date().getTime().toString();
+    const apiKey = obfuscateApiKey(timestamp, options.token);
 
     polarityRequest.setOptions(options);
     polarityRequest.setHeader({
       'Content-Type': 'application/json'
     });
 
-    const session = await createSession(options);
+    // setting the authorizedRequestOptions on the polarityRequest object so we can used fot the retry logic
+    polarityRequest.authorizedRequestOptions = {
+      method: 'POST',
+      path: '/api/v1/authenticatedSession',
+      body: {
+        apiKey,
+        username: options.username,
+        password: options.password,
+        timestamp
+      }
+    };
+
+    const session = await polarityRequest.request(
+      polarityRequest.authorizedRequestOptions
+    );
     Logger.trace({ session }, 'Created  Session');
 
     polarityRequest.setHeader('cookie', session.headers['set-cookie']);
@@ -52,45 +68,10 @@ async function doLookup(entities, options, cb) {
     Logger.trace({ lookupResults }, 'Lookup Results');
     return cb(null, lookupResults);
   } catch (error) {
-    Logger.trace({ error }, 'Error in doLookup');
-
-    if (error instanceof AuthRequestError) {
-      if (polarityRequest.MAX_RETRIES >= 3) {
-        const session = polarityRequest.request(polarityRequest.authorizedRequestOptions);
-        polarityRequest.setHeader('cookie', session.headers['set-cookie']);
-        polarityRequest.MAX_RETRIES++;
-      }
-    }
-
     const errorAsPojo = parseErrorToReadableJSON(error);
     Logger.error({ error: errorAsPojo }, 'Error in doLookup');
     cb(errorAsPojo);
   }
-}
-
-async function createSession(options) {
-  const Logger = getLogger();
-  const timestamp = new Date().getTime().toString();
-  const apiKey = obfuscateApiKey(timestamp, options.token);
-
-  const sessionRequestOptions = {
-    method: 'POST',
-    path: '/api/v1/authenticatedSession',
-    body: {
-      apiKey,
-      username: options.username,
-      password: options.password,
-      timestamp
-    }
-  };
-
-  Logger.trace({ sessionRequestOptions }, 'Session Request Options');
-  /*
-    setting the authorizedRequestOptions on the polarityRequest object so we can used fot the retry logic
- */
-  polarityRequest.authorizedRequestOptions = sessionRequestOptions;
-  const session = await polarityRequest.request(sessionRequestOptions);
-  return session;
 }
 
 async function onMessage(payload, options, cb) {
@@ -111,16 +92,10 @@ async function onMessage(payload, options, cb) {
         cb(null, 'No action found');
     }
   } catch (error) {
-    /* 
-      removed the AuthRequestError for now, don't want to call session in here, 
-      need to handle expiring auth token
-    */
-    if (error instanceof AuthRequestError) {
-      if (polarityRequest.MAX_RETRIES >= 3) {
-        const session = await createSession(polarityRequest.authorizedRequestOptions);
-        polarityRequest.setHeader('cookie', session.headers['set-cookie']);
-        polarityRequest.MAX_RETRIES++;
-      }
+    if (error instanceof AuthRequestError && polarityRequest.MAX_RETRIES <= 3) {
+      const session = await createSession(polarityRequest.authorizedRequestOptions);
+      polarityRequest.setHeader('cookie', session.headers['set-cookie']);
+      polarityRequest.MAX_RETRIES++;
     }
 
     const errorAsPojo = parseErrorToReadableJSON(error);

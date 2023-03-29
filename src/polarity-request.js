@@ -42,7 +42,6 @@ const HTTP_CODE_SERVER_LIMIT_504 = 504;
 class PolarityRequest {
   constructor() {
     this.requestWithDefaults = request.defaults(defaults);
-    // this.requestOptions = {};
     this.headers = {};
     this.options = {};
     this.MAX_RETRIES = 0;
@@ -95,8 +94,6 @@ class PolarityRequest {
     const { path, ...requestOptions } = requestOptionsObj;
     Logger.trace({ requestOptions }, 'Request Options');
 
-    // this.requestOptions = requestOptions;
-
     return new Promise((resolve, reject) => {
       this.requestWithDefaults(requestOptions, async (err, response) => {
         Logger.trace({ err, response }, 'Request Response');
@@ -108,7 +105,6 @@ class PolarityRequest {
           statusCode === HTTP_CODE_SUCCESS_202
         ) {
           return resolve({ ...response, requestOptions });
-          // return reject(new ApiRequestError('test', { statusCode, requestOptions }));
         }
 
         if (statusCode === HTTP_CODE_BAD_REQUEST_400) {
