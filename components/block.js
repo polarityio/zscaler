@@ -25,8 +25,10 @@ polarity.export = PolarityComponent.extend({
   },
   actions: {
     addUrl: function () {
-      this.set('removeUrlErrorMessage', '');
-      this.set('addUrlErrorMessage', '');
+      this.clearErrorMessages();
+      this.clearMessages();
+      this.disableButtons();
+
       this.set('addButtonIsRunning', true);
 
       this.sendIntegrationMessage({
@@ -40,25 +42,29 @@ polarity.export = PolarityComponent.extend({
         .then(() => {
           this.set(
             'addUrlMessage',
-            `URL Successfully Added to ${this.get('selectedCategory')}`
+            `URL successfully added to ${this.get('selectedCategory')}`
           );
-        })
-        .catch((err) => {
-          this.set('addUrlErrorMessage', JSON.stringify(`${err.meta.detail}`));
-          this.set('showCategoryMessage', false);
-        })
-        .finally(() => {
-          this.set('removeUrlMessage', '');
-          this.set('showCategoryMessage', false);
           this.set('disableAddUrlButton', true);
           this.set('disableRemoveUrlButton', false);
-          this.set('addButtonIsRunning', false);
           this.set('inCategory', true);
+        })
+        .catch((err) => {
+          if (err.meta && err.meta.detail) {
+            this.set('addUrlErrorMessage', `${err.meta.detail}`);
+          } else {
+            this.set('addUrlErrorMessage', JSON.stringify(err, null, 2));
+          }
+        })
+        .finally(() => {
+          this.set('showCategoryMessage', false);
+          this.set('addButtonIsRunning', false);
         });
     },
     removeUrl: function () {
-      this.set('removeUrlErrorMessage', '');
-      this.set('addUrlErrorMessage', '');
+      this.clearErrorMessages();
+      this.clearMessages();
+      this.disableButtons();
+
       this.set('removeButtonIsRunning', true);
 
       this.sendIntegrationMessage({
@@ -72,20 +78,22 @@ polarity.export = PolarityComponent.extend({
         .then(() => {
           this.set(
             'removeUrlMessage',
-            `URL Successfully Removed from ${this.get('selectedCategory')}`
+            `URL successfully removed from ${this.get('selectedCategory')}`
           );
-        })
-        .catch((err) => {
-          this.set('removeUrlErrorMessage', JSON.stringify(`${err.meta.detail}`));
-          this.set('showCategoryMessage', false);
-        })
-        .finally(() => {
-          this.set('addUrlMessage', '');
-          this.set('removeButtonIsRunning', false);
-          this.set('removeUrlErrorMessage', '');
-          this.set('showCategoryMessage', false);
           this.set('disableAddUrlButton', false);
           this.set('disableRemoveUrlButton', true);
+          this.set('inCategory', false);
+        })
+        .catch((err) => {
+          if (err.meta && err.meta.detail) {
+            this.set('removeUrlErrorMessage', `${err.meta.detail}`);
+          } else {
+            this.set('removeUrlErrorMessage', JSON.stringify(err, null, 2));
+          }
+        })
+        .finally(() => {
+          this.set('showCategoryMessage', false);
+          this.set('removeButtonIsRunning', false);
         });
     },
     categoryLookup: function (category) {
@@ -93,16 +101,12 @@ polarity.export = PolarityComponent.extend({
     }
   },
   loadCategory(category) {
-    this.set('removeUrlErrorMessage', '');
-    this.set('addUrlErrorMessage', '');
-    this.set('addUrlMessage', '');
-    this.set('removeUrlMessage', '');
+    this.clearErrorMessages();
+    this.clearMessages();
+    this.disableButtons();
+
     this.set('selectedCategory', category);
     this.set('loadingCategory', true);
-    this.set('disableAddUrlButton', true);
-    this.set('disableRemoveUrlButton', true);
-    this.set('removeUrlErrorMessage', '');
-    this.set('addUrlErrorMessage', '');
     this.set('showCategoryMessage', false);
 
     this.sendIntegrationMessage({
@@ -117,22 +121,37 @@ polarity.export = PolarityComponent.extend({
         // ever be a single object, so we can just grab the first element.
         this.set('inCategory', response[0].result.body.inCategory);
         this.set('configuredName', response[0].result.body.configuredName);
-      })
-      .catch((err) => {
-        this.set('categoryLookupErrorMessage', `${err.meta.detail}`);
-      })
-      .finally(() => {
+        this.set('showCategoryMessage', true);
         const isInCategory = this.get('inCategory');
-
         if (isInCategory) {
           this.set('disableRemoveUrlButton', false);
         } else if (!isInCategory) {
           this.set('disableAddUrlButton', false);
         }
-        this.set('showCategoryMessage', true);
+      })
+      .catch((err) => {
+        if (err.meta && err.meta.detail) {
+          this.set('categoryLookupErrorMessage', `${err.meta.detail}`);
+        } else {
+          this.set('categoryLookupErrorMessage', JSON.stringify(err, null, 2));
+        }
+      })
+      .finally(() => {
         this.set('loadingCategory', false);
-        this.set('categoryLookupErrorMessage', '');
         this.get('block').notifyPropertyChange('data');
       });
+  },
+  clearErrorMessages() {
+    this.set('removeUrlErrorMessage', '');
+    this.set('addUrlErrorMessage', '');
+    this.set('categoryLookupErrorMessage', '');
+  },
+  clearMessages() {
+    this.set('addUrlMessage', '');
+    this.set('removeUrlMessage', '');
+  },
+  disableButtons() {
+    this.set('disableRemoveUrlButton', true);
+    this.set('disableAddUrlButton', true);
   }
 });
