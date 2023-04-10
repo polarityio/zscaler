@@ -1,8 +1,7 @@
 module.exports = {
   name: 'Zscaler',
   acronym: 'ZS',
-  description: `Zscaler Internet Access (ZIA) is a cloud-based security solution that provides secure and direct access to the internet for users, 
-  protecting against cyber threats and ensuring compliance with organizational policies. It includes features such as web filtering, threat protection, and secure access service edge (SASE) capabilities.`,
+  description: `Add or remove URLs from ZScaler URL categories.`,
   styles: ['./styles/styles.less'],
   entityTypes: ['domain'],
   defaultColor: 'light-blue',
@@ -23,7 +22,7 @@ module.exports = {
     rejectUnauthorized: true
   },
   logging: {
-    level: 'trace' //trace, debug, info, warn, error, fatal
+    level: 'info' //trace, debug, info, warn, error, fatal
   },
   options: [
     {
@@ -39,7 +38,7 @@ module.exports = {
     {
       key: 'username',
       name: 'Zscaler Username',
-      description: 'Enter the username associated with your Zscaler instance.',
+      description: 'Enter the username for your ZScaler account.',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -48,7 +47,7 @@ module.exports = {
     {
       key: 'password',
       name: 'Zscaler Password',
-      description: 'Enter the password associated with your Zscaler instance.',
+      description: 'Enter the password associated with your ZScaler username.',
       default: '',
       type: 'password',
       userCanEdit: false,
@@ -66,8 +65,7 @@ module.exports = {
     {
       key: 'categories',
       name: 'Categories',
-      description: `A comma separated list of categories that can be used to add or remove urls from Zscaler
-        'The first category in the list will be used as the default category. This option must be set to "Users can view only".`,
+      description: `A comma separated list of Zscaler categories that URLs can be added to or removed from. The first category in the list will be used as the default category.  This option must be set to "Users can view only".`,
       default: '',
       type: 'text',
       userCanEdit: false,
