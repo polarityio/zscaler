@@ -67,11 +67,11 @@ module.exports = {
       key: 'categories',
       name: 'Categories',
       description: `A comma separated list of categories that can be used to add or remove urls from Zscaler
-        'The first category in the list will be used as the default category.`,
+        'The first category in the list will be used as the default category. This option must be set to "Users can view only".`,
       default: '',
       type: 'text',
       userCanEdit: false,
-      adminOnly: true
+      adminOnly: false
     }
   ]
 };
