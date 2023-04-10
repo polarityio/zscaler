@@ -1,6 +1,6 @@
 module.exports = {
-  name: 'Zscalar',
-  acronym: 'Zscalar',
+  name: 'Zscaler',
+  acronym: 'ZS',
   description: `Zscaler Internet Access (ZIA) is a cloud-based security solution that provides secure and direct access to the internet for users, 
   protecting against cyber threats and ensuring compliance with organizational policies. It includes features such as web filtering, threat protection, and secure access service edge (SASE) capabilities.`,
   styles: ['./styles/styles.less'],
@@ -28,9 +28,9 @@ module.exports = {
   options: [
     {
       key: 'url',
-      name: 'Zscalar URL',
+      name: 'Zscaler URL',
       description:
-        'The URL for your Zscalar instance.  The URL should include the scheme (https://).',
+        'The URL for your Zscaler instance.  The URL should include the scheme (https://).',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -38,8 +38,8 @@ module.exports = {
     },
     {
       key: 'username',
-      name: 'Zscalar Username',
-      description: 'Enter the username associated with your Zscalar instance.',
+      name: 'Zscaler Username',
+      description: 'Enter the username associated with your Zscaler instance.',
       default: '',
       type: 'text',
       userCanEdit: false,
@@ -47,8 +47,8 @@ module.exports = {
     },
     {
       key: 'password',
-      name: 'Zscalar Password',
-      description: 'Enter the password associated with your Zscalar instance.',
+      name: 'Zscaler Password',
+      description: 'Enter the password associated with your Zscaler instance.',
       default: '',
       type: 'password',
       userCanEdit: false,
@@ -56,8 +56,8 @@ module.exports = {
     },
     {
       key: 'token',
-      name: 'Zscalar Token',
-      description: 'Enter the Zscalar API Token associated with your Zscalar account.',
+      name: 'Zscaler Token',
+      description: 'Enter the Zscaler API Token associated with your Zscaler account.',
       default: '',
       type: 'password',
       userCanEdit: false,
@@ -66,7 +66,7 @@ module.exports = {
     {
       key: 'categories',
       name: 'Categories',
-      description: `A comma separated list of categories that can be used to add or remove urls from Zscalar
+      description: `A comma separated list of categories that can be used to add or remove urls from Zscaler
         'The first category in the list will be used as the default category.`,
       default: '',
       type: 'text',
