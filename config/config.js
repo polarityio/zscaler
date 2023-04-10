@@ -27,9 +27,9 @@ module.exports = {
   options: [
     {
       key: 'url',
-      name: 'Zscaler URL',
+      name: 'Zscaler API URL',
       description:
-        'The URL for your Zscaler instance.  The URL should include the scheme (https://).',
+        'The URL for your Zscaler API instance. The URL should include the scheme (https://).',
       default: '',
       type: 'text',
       userCanEdit: false,
