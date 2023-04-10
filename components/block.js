@@ -24,7 +24,7 @@ polarity.export = PolarityComponent.extend({
     this._super(...arguments);
   },
   actions: {
-    addUrl: () => {
+    addUrl: function () {
       this.set('removeUrlErrorMessage', '');
       this.set('addUrlErrorMessage', '');
       this.set('addButtonIsRunning', true);
@@ -56,7 +56,7 @@ polarity.export = PolarityComponent.extend({
           this.set('inCategory', true);
         });
     },
-    removeUrl: () => {
+    removeUrl: function () {
       this.set('removeUrlErrorMessage', '');
       this.set('addUrlErrorMessage', '');
       this.set('removeButtonIsRunning', true);
@@ -88,7 +88,7 @@ polarity.export = PolarityComponent.extend({
           this.set('disableRemoveUrlButton', true);
         });
     },
-    categoryLookup: (category) => {
+    categoryLookup: function (category) {
       this.loadCategory(category);
     }
   },
@@ -103,7 +103,7 @@ polarity.export = PolarityComponent.extend({
     this.set('disableRemoveUrlButton', true);
     this.set('removeUrlErrorMessage', '');
     this.set('addUrlErrorMessage', '');
-    this.set('showCategoryMessage', true);
+    this.set('showCategoryMessage', false);
 
     this.sendIntegrationMessage({
       action: 'CATEGORY_LOOKUP',
@@ -129,55 +129,10 @@ polarity.export = PolarityComponent.extend({
         } else if (!isInCategory) {
           this.set('disableAddUrlButton', false);
         }
-
+        this.set('showCategoryMessage', true);
         this.set('loadingCategory', false);
         this.set('categoryLookupErrorMessage', '');
         this.get('block').notifyPropertyChange('data');
       });
   }
 });
-
-// "body": {
-//   "id": "CUSTOM_02",
-//   "configuredName": "CISO-Chat-Allow",
-//   "superCategory": "USER_DEFINED",
-//   "keywords": [],
-//   "keywordsRetainingParentCategory": [],
-//   "urls": [],
-//   "dbCategorizedUrls": [
-//     "badguy.com",
-//     "twitter.com",
-//     "testalal.com",
-//     "thisisaverylongtesturlrequiredtocreatethecustomcategory.info",
-//     "anothertest.com",
-//     "testingaddingurls.com"
-//   ],
-//   "customCategory": true,
-//   "editable": true,
-//   "description": "CUSTOM_02_DESC",
-//   "type": "URL_CATEGORY",
-//   "val": 129,
-//   "customUrlsCount": 0,
-//   "urlsRetainingParentCategoryCount": 6,
-//   "customIpRangesCount": 0,
-//   "ipRangesRetainingParentCategoryCount": 0,
-//   "inCategory": "twitter.com"
-// }
-
-// "body": {
-//   "id": "OTHER_ENTERTAINMENT_AND_RECREATION",
-//   "superCategory": "ENTERTAINMENT_AND_RECREATION",
-//   "keywords": [],
-//   "keywordsRetainingParentCategory": [],
-//   "urls": [],
-//   "dbCategorizedUrls": [],
-//   "customCategory": false,
-//   "editable": false,
-//   "description": "OTHER_ENTERTAINMENT_AND_RECREATION_DESC",
-//   "type": "URL_CATEGORY",
-//   "val": 21,
-//   "customUrlsCount": 0,
-//   "urlsRetainingParentCategoryCount": 0,
-//   "customIpRangesCount": 0,
-//   "ipRangesRetainingParentCategoryCount": 0
-// }
