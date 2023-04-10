@@ -47,6 +47,7 @@ class PolarityRequest {
     this.MAX_RETRIES = 0;
     this.currentRetries = 0;
   }
+
   /**
    * Set header `field` to `val`, or pass
    * an object of header fields.
@@ -76,6 +77,7 @@ class PolarityRequest {
   setOptions(options) {
     this.options = options;
   }
+
   /**
    * Makes a request network request using postman-request.  If the request is an array, it will run the requests in parallel.
    * @param requestOptions  - the request options to pass to postman-request. It will either being an array of requests or a single request.
@@ -109,7 +111,7 @@ class PolarityRequest {
 
         if (statusCode === HTTP_CODE_BAD_REQUEST_400) {
           return reject(
-            new ApiRequestError(`API Request Error: Check your Zscalar instance URL`, {
+            new ApiRequestError(`API Request Error: Check your Zscaler instance URL`, {
               statusCode,
               requestOptions
             })
@@ -119,9 +121,7 @@ class PolarityRequest {
         if (statusCode === HTTP_CODE_EXPIRED_BEARER_TOKEN_401) {
           return reject(
             new AuthRequestError(
-              `Authentication Error: If the your token has not timed out, 
-               please run the search again to get a new token. 
-               Or Check that your Zscalar API token is valid.`,
+              `Authentication Error: Check that your Zscaler API token is valid.`,
               {
                 statusCode,
                 requestOptions
@@ -144,8 +144,8 @@ class PolarityRequest {
           );
         }
         /* typically integrations return  a null value for the data property when a resource is not found.
-           However, I think for this integration, it would be better to throw an error so the user knows that the category they had listed does not exist.
-        */
+                   However, I think for this integration, it would be better to throw an error so the user knows that the category they had listed does not exist.
+                */
         if (statusCode === HTTP_CODE_NOT_FOUND_404) {
           return reject(
             new ApiRequestError(
