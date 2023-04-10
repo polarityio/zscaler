@@ -4,7 +4,7 @@
 >
   <option disabled>-- Select a Category --</option>
   {{#each categories as |category|}}
-    <option class="category" value="{{category}}">{{category}}</option>
+    <option class="category" value="{{category.value}}">{{category.label}}</option>
   {{/each}}
 </select>
 
@@ -20,10 +20,10 @@
 {{#if showCategoryMessage}}
   {{#if inCategory}}
     <span class="p-footnote">This URL is already in the category
-      {{selectedCategory}}, you can remove it by clicking the "Remove URL" button.</span>
+      {{selectedCategory.label}}, you can remove it by clicking the "Remove URL" button.</span>
   {{else}}
     <span class="p-footnote">This URL is not in the category
-      {{selectedCategory}}, you can add it by clicking the "Add URL" button.</span>
+      {{selectedCategory.label}}, you can add it by clicking the "Add URL" button.</span>
   {{/if}}
 {{/if}}
 

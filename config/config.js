@@ -65,7 +65,8 @@ module.exports = {
     {
       key: 'categories',
       name: 'URL Categories',
-      description: `A comma separated list of Zscaler URL categories that URLs can be added to or removed from. The first category in the list will be used as the default category.  This option must be set to "Users can view only".`,
+      description:
+        'A comma separated list of Zscaler category IDs that URLs can be added to or removed from. The first category in the list will be used as the default category.  You can also add a user-friendly label to the category by prepending the category with a label and using a colon to separate it from the category ID (i.e., "<label>:<categoryId>"). Note that the name of the category is not the same as the category\'s ID.  See the integration README for information on finding the category ID. This option must be set to "Users can view only"',
       default: '',
       type: 'text',
       userCanEdit: false,

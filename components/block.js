@@ -16,7 +16,12 @@ polarity.export = PolarityComponent.extend({
   }),
   init() {
     const categories = this.get('block.userOptions.categories');
-    const list = categories.split(',').map((item) => item.trim());
+    const list = categories.split(',').map((item) => {
+      const tokens = item.split(':').map((subItem) => subItem.trim());
+      const label = tokens[0];
+      const value = tokens.length > 1 ? tokens[1] : tokens[0];
+      return { label, value };
+    });
     // set the first category in the user options list as the default
     this.set('selectedCategory', list[0]);
     this.set('categories', list);
@@ -35,14 +40,14 @@ polarity.export = PolarityComponent.extend({
         action: 'ADD_URL',
         data: {
           entity: this.get('block.entity'),
-          category: this.get('selectedCategory'),
+          category: this.get('selectedCategory.value'),
           configuredName: this.get('configuredName')
         }
       })
         .then(() => {
           this.set(
             'addUrlMessage',
-            `URL successfully added to ${this.get('selectedCategory')}`
+            `URL successfully added to ${this.get('selectedCategory.label')}`
           );
           this.set('disableAddUrlButton', true);
           this.set('disableRemoveUrlButton', false);
@@ -71,14 +76,14 @@ polarity.export = PolarityComponent.extend({
         action: 'REMOVE_URL',
         data: {
           entity: this.get('block.entity'),
-          category: this.get('selectedCategory'),
+          category: this.get('selectedCategory.value'),
           configuredName: this.get('configuredName')
         }
       })
         .then(() => {
           this.set(
             'removeUrlMessage',
-            `URL successfully removed from ${this.get('selectedCategory')}`
+            `URL successfully removed from ${this.get('selectedCategory.label')}`
           );
           this.set('disableAddUrlButton', false);
           this.set('disableRemoveUrlButton', true);
@@ -96,7 +101,10 @@ polarity.export = PolarityComponent.extend({
           this.set('removeButtonIsRunning', false);
         });
     },
-    categoryLookup: function (category) {
+    categoryLookup: function (categoryValue) {
+      const category = this.get('categories').find(
+        (category) => category.value === categoryValue
+      );
       this.loadCategory(category);
     }
   },
@@ -113,7 +121,7 @@ polarity.export = PolarityComponent.extend({
       action: 'CATEGORY_LOOKUP',
       data: {
         entity: this.get('block.entity'),
-        category: category.toUpperCase()
+        category: category.value.toUpperCase()
       }
     })
       .then((response) => {
