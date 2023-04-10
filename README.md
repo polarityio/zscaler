@@ -36,7 +36,7 @@ Enter the password associated with your ZScaler username.
 
 Enter the Zscaler API Token associated with your Zscaler account.
 
-## Categories
+### URL Categories
 
 A comma separated list of Zscaler categories that URLs can be added to or removed from. The first category in the list will be used as the default category.  This option must be set to "Users can view only".
 

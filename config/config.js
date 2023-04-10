@@ -64,8 +64,8 @@ module.exports = {
     },
     {
       key: 'categories',
-      name: 'Categories',
-      description: `A comma separated list of Zscaler categories that URLs can be added to or removed from. The first category in the list will be used as the default category.  This option must be set to "Users can view only".`,
+      name: 'URL Categories',
+      description: `A comma separated list of Zscaler URL categories that URLs can be added to or removed from. The first category in the list will be used as the default category.  This option must be set to "Users can view only".`,
       default: '',
       type: 'text',
       userCanEdit: false,
