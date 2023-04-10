@@ -16,17 +16,15 @@ polarity.export = PolarityComponent.extend({
   }),
   init() {
     const categories = this.get('block.userOptions.categories');
-    const list = categories.split(',');
-    // add a default option to the beginning of the list.
-    list.unshift('Select a Category');
+    const list = categories.split(',').map((item) => item.trim());
     // set the first category in the user options list as the default
     this.set('selectedCategory', list[0]);
     this.set('categories', list);
-
+    this.loadCategory(this.get('selectedCategory'));
     this._super(...arguments);
   },
   actions: {
-    addUrl: async function () {
+    addUrl: () => {
       this.set('removeUrlErrorMessage', '');
       this.set('addUrlErrorMessage', '');
       this.set('addButtonIsRunning', true);
@@ -58,7 +56,7 @@ polarity.export = PolarityComponent.extend({
           this.set('inCategory', true);
         });
     },
-    removeUrl: async function () {
+    removeUrl: () => {
       this.set('removeUrlErrorMessage', '');
       this.set('addUrlErrorMessage', '');
       this.set('removeButtonIsRunning', true);
@@ -90,56 +88,52 @@ polarity.export = PolarityComponent.extend({
           this.set('disableRemoveUrlButton', true);
         });
     },
-    categoryLookup: function (event) {
-      this.set('removeUrlErrorMessage', '');
-      this.set('addUrlErrorMessage', '');
-      this.set('addUrlMessage', '');
-      this.set('removeUrlMessage', '');
-
-      const category = event.target.value;
-      // just return, as we don't want to this make a request.
-      if (category === 'Select a Category') {
-        return;
-      }
-
-      this.set('selectedCategory', category);
-      this.set('loadingCategory', true);
-      this.set('disableAddUrlButton', true);
-      this.set('disableRemoveUrlButton', true);
-      this.set('removeUrlErrorMessage', '');
-      this.set('addUrlErrorMessage', '');
-      this.set('showCategoryMessage', true);
-
-      this.sendIntegrationMessage({
-        action: 'CATEGORY_LOOKUP',
-        data: {
-          entity: this.get('block.entity'),
-          category: category.toUpperCase()
-        }
-      })
-        .then((response) => {
-          // the query functions always return an array of results, this will only
-          // ever be a single object, so we can just grab the first element.
-          this.set('inCategory', response[0].result.body.inCategory);
-          this.set('configuredName', response[0].result.body.configuredName);
-        })
-        .catch((err) => {
-          this.set('categoryLookupErrorMessage', `${err.meta.detail}`);
-        })
-        .finally(() => {
-          const isInCategory = this.get('inCategory');
-
-          if (isInCategory) {
-            this.set('disableRemoveUrlButton', false);
-          } else if (!isInCategory) {
-            this.set('disableAddUrlButton', false);
-          }
-
-          this.set('loadingCategory', false);
-          this.set('categoryLookupErrorMessage', '');
-          this.get('block').notifyPropertyChange('data');
-        });
+    categoryLookup: (category) => {
+      this.loadCategory(category);
     }
+  },
+  loadCategory(category) {
+    this.set('removeUrlErrorMessage', '');
+    this.set('addUrlErrorMessage', '');
+    this.set('addUrlMessage', '');
+    this.set('removeUrlMessage', '');
+    this.set('selectedCategory', category);
+    this.set('loadingCategory', true);
+    this.set('disableAddUrlButton', true);
+    this.set('disableRemoveUrlButton', true);
+    this.set('removeUrlErrorMessage', '');
+    this.set('addUrlErrorMessage', '');
+    this.set('showCategoryMessage', true);
+
+    this.sendIntegrationMessage({
+      action: 'CATEGORY_LOOKUP',
+      data: {
+        entity: this.get('block.entity'),
+        category: category.toUpperCase()
+      }
+    })
+      .then((response) => {
+        // the query functions always return an array of results, this will only
+        // ever be a single object, so we can just grab the first element.
+        this.set('inCategory', response[0].result.body.inCategory);
+        this.set('configuredName', response[0].result.body.configuredName);
+      })
+      .catch((err) => {
+        this.set('categoryLookupErrorMessage', `${err.meta.detail}`);
+      })
+      .finally(() => {
+        const isInCategory = this.get('inCategory');
+
+        if (isInCategory) {
+          this.set('disableRemoveUrlButton', false);
+        } else if (!isInCategory) {
+          this.set('disableAddUrlButton', false);
+        }
+
+        this.set('loadingCategory', false);
+        this.set('categoryLookupErrorMessage', '');
+        this.get('block').notifyPropertyChange('data');
+      });
   }
 });
 

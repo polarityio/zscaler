@@ -1,8 +1,8 @@
 <select
   class="category-selection"
-  onchange={{action "categoryLookup"}}
-  value="target.value"
+  onchange={{action "categoryLookup" value="target.value"}}
 >
+  <option disabled>-- Select a Category --</option>
   {{#each categories as |category|}}
     <option class="category" value="{{category}}">{{category}}</option>
   {{/each}}
