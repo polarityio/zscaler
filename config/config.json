@@ -23,6 +23,7 @@
   "logging": {
     "level": "trace"
   },
+  "polarityIntegrationUuid": "9496ec10-d89c-11ed-87bb-e3036540f9ea",
   "options": [
     {
       "key": "url",
