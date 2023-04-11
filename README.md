@@ -68,8 +68,6 @@ If the category is not displayed from clicking on the category like suggested in
 6. In the developer tools, click on the 'Headers' tab. The category ID will be in the 'Request URL'. In this example, the category ID is STREAMING_MEDIA.
    ![image](./assets/request-url-headers.png)
 
-```
-
 ## Installation Instructions
 
 Installation instructions for integrations are provided on the [PolarityIO GitHub Page](https://polarityio.github.io/).
@@ -79,4 +77,3 @@ Installation instructions for integrations are provided on the [PolarityIO GitHu
 Polarity is a memory-augmentation platform that improves and accelerates analyst decision making. For more information about the Polarity platform please see:
 
 https://polarity.io/
-```
