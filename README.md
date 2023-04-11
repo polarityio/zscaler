@@ -47,24 +47,26 @@ The category ID is not the same as the category name. In order to configure whic
 Option 1:
 
 1. Navigate to the Zscaler Admin Portal and login using our Zscaler credentials.
-   <img src="./assets/zscaler-login.png" width="50%">
+   ![image](./assets/zscaler-login.png)
 2. Once logged in, on the left-hand side of the zscalar dashboard, hover over the 'Administration' button, a menu will appear, under the 'Resources' section, click on 'URL Categories'.
-   <img src="./assets/side-bar-menu.png" width="50%">
+   <!-- <img src="./assets/side-bar-menu.png" width="50%"> -->
+   ![image](./assets/side-bar-menu.png)
 3. A list of all the URL categories will appear. Click on the category you want to add or remove URLs from, and the ID will pop up. Copy the ID and paste it into the 'URL Categories' option in the integration configuration.
-   <img src="./assets/category-id.png" width="50%">
+   ![image](./assets/category-id.png)
 
 option 2:
 If the category is not displayed from clicking on the category like suggested in option 1. An alternative is to get the category id from request options in the browser. To do this, follow the steps below:
 
 1. Complete steps 1 and 2 from option 1.
 2. When viewing the list of categories in the zscalar dashboard, right-click on the page and select 'inspect' from the dropdown menu. This will open the developer tools.
-   <img src="./assets/dropdown-select.png" width="50%">
+   ![image](./assets/dropdown-select.png)
 3. In the developer tools, click on the 'Network' tab.
-   <img src="./assets/network-tab.png" width="50%">
+   ![image](./assets/network-tab.png)
 4. Click on the view category button in the dashboard.
-   <img src="./assets/category.png" width="50%">
+   ![image](./assets/category.png)
 5. In the developer tools, click on the 'Headers' tab. The category ID will be in the 'Request URL'.
-   <img src="./assets/request-url-headers.png" width="50%">
+   In this example, the category ID is STREAMING_MEDIA.
+   ![image](./assets/request-url-headers.png)
 
 ```
 
