@@ -1,8 +1,14 @@
 {
-  "name": "Zscalar",
-  "acronym": "Zscalar",
-  "description": "Zscaler Internet Access (ZIA) is a cloud-based security solution that provides secure and direct access to the internet for users,protecting against cyber threats and ensuring compliance with organizational policies. It includes features such as web filtering, threat protection, and secure access service edge (SASE) capabilities.",
-  "styles": ["./styles/styles.less"],
+  "name": "Zscaler",
+  "acronym": "ZS",
+  "description": "Add or remove URLs from ZScaler URL categories.",
+  "polarityIntegrationUuid": "9496ec10-d89c-11ed-87bb-e3036540f9ea",
+  "styles": [
+    "./styles/styles.less"
+  ],
+  "entityTypes": [
+    "domain"
+  ],
   "defaultColor": "light-blue",
   "block": {
     "component": {
@@ -21,14 +27,13 @@
     "rejectUnauthorized": true
   },
   "logging": {
-    "level": "trace"
+    "level": "info"
   },
-  "polarityIntegrationUuid": "9496ec10-d89c-11ed-87bb-e3036540f9ea",
   "options": [
     {
       "key": "url",
-      "name": "Zscalar URL",
-      "description": "The URL for your Zscalar instance.  The URL should include the scheme (https://).",
+      "name": "Zscaler API URL",
+      "description": "The URL for your Zscaler API instance. The URL should include the scheme (https://).",
       "default": "",
       "type": "text",
       "userCanEdit": false,
@@ -36,8 +41,8 @@
     },
     {
       "key": "username",
-      "name": "Zscalar Username",
-      "description": "Enter the username associated with your Zscalar instance.",
+      "name": "Zscaler Username",
+      "description": "Enter the username for your ZScaler account.",
       "default": "",
       "type": "text",
       "userCanEdit": false,
@@ -45,8 +50,8 @@
     },
     {
       "key": "password",
-      "name": "Zscalar Password",
-      "description": "Enter the password associated with your Zscalar instance.",
+      "name": "Zscaler Password",
+      "description": "Enter the password associated with your ZScaler username.",
       "default": "",
       "type": "password",
       "userCanEdit": false,
@@ -54,8 +59,8 @@
     },
     {
       "key": "token",
-      "name": "Zscalar Token",
-      "description": "API Token.",
+      "name": "Zscaler Token",
+      "description": "Enter the Zscaler API Token associated with your Zscaler account.",
       "default": "",
       "type": "password",
       "userCanEdit": false,
@@ -63,12 +68,12 @@
     },
     {
       "key": "categories",
-      "name": "Categories",
-      "description": "A comma separated list of categories that can be used to add or remove urls from Zscalar. The first category in the list will be used as the default category.",
+      "name": "URL Categories",
+      "description": "A comma separated list of Zscaler category IDs that URLs can be added to or removed from. The first category in the list will be used as the default category.  You can also add a user-friendly label to the category by prepending the category with a label and using a colon to separate it from the category ID (i.e., \"<label>:<categoryId>\"). Note that the name of the category is not the same as the category's ID.  See the integration README for information on finding the category ID. This option must be set to \"Users can view only\"",
       "default": "",
       "type": "text",
       "userCanEdit": false,
-      "adminOnly": true
+      "adminOnly": false
     }
   ]
 }
