@@ -56,7 +56,7 @@ The category ID is not the same as the category name. In order to configure whic
 4. In the developer tools, click on the 'Network' tab.
    ![image](./assets/network-tab.png)
 
-5. Click on the view category button in the dashboard.
+5. Click on the view or edit category button for the category you want to add or remove urls from. It should be on the right side of the category row. When clicked, a modal will appear with the category details.
    ![image](./assets/category.png)
 
 6. In the developer tools, click on the 'Headers' tab. The category ID will be in the 'Request URL'. In this example, the category ID is STREAMING_MEDIA.
