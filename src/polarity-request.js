@@ -106,8 +106,6 @@ class PolarityRequest {
           statusCode === HTTP_CODE_SUCCESS_201 ||
           statusCode === HTTP_CODE_SUCCESS_202
         ) {
-          // the way this previously worked it was overriding the headers we
-          // needed on the response with headers we used on the request options
           return resolve(response);
         }
 
