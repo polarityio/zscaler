@@ -9,7 +9,7 @@ async function removeUrl(payload) {
 
   const response = await polarityRequest.send({
     method: 'PUT',
-    path: `/api/v1/urlCategories/${CATEGORY}?action=REMOVE_FROM_LIST`,
+    path: `api/v1/urlCategories/${CATEGORY}?action=REMOVE_FROM_LIST`,
     body: {
       configuredName: CONFIGURED_NAME,
       dbCategorizedUrls: [payload.data.entity.value]

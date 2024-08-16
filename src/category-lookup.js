@@ -11,7 +11,7 @@ async function categoryLookup(payload) {
   const requestOptions = {
     entity: payload.data.entity,
     method: 'GET',
-    path: `/api/v1/urlCategories/${payload.data.category.trim()}`
+    path: `api/v1/urlCategories/${payload.data.category.trim()}`
   };
   Logger.trace({ requestOptions }, 'Request Options');
 

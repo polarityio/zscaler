@@ -85,10 +85,11 @@ class PolarityRequest {
    */
   async request(reqOpts) {
     const Logger = getLogger();
+    const url = this.options.url.endsWith('/') ? this.options.url : `${this.options.url}/`;
 
     const requestOptionsObj = {
       method: reqOpts.method,
-      url: this.options.url + reqOpts.path,
+      url: url + reqOpts.path,
       headers: this.headers,
       ...reqOpts
     };
