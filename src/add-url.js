@@ -9,7 +9,7 @@ async function addUrl(payload) {
 
   const response = await polarityRequest.send({
     method: 'PUT',
-    path: `/api/v1/urlCategories/${CATEGORY}?action=ADD_TO_LIST`,
+    path: `api/v1/urlCategories/${CATEGORY}?action=ADD_TO_LIST`,
     body: {
       id: CATEGORY,
       configuredName: CONFIGURED_NAME,
@@ -31,7 +31,7 @@ async function addUrl(payload) {
 
 //     const response = await polarityRequest.send({
 //       method: 'PUT',
-//       path: `/api/v1/urlCategories/ENTERTAINMENT_AND_RECREATION?action=ADD_TO_LIST`,
+//       path: `api/v1/urlCategories/ENTERTAINMENT_AND_RECREATION?action=ADD_TO_LIST`,
 //       body: {
 //         superCategory: 'OTHER_ENTERTAINMENT_AND_RECREATION',
 //         dbCategorizedUrls: [payload.data.entity.value]

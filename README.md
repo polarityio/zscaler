@@ -23,6 +23,7 @@ https://zsapi.zscalerthree.net
 https://zsapi.zscaler.net
 https://zsapi.zscloud.net
 ```
+Do **not** include the API path `/api/v1` in the ZScaler API instance URL.
 
 ### Zscaler Username
 

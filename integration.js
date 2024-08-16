@@ -56,7 +56,7 @@ async function createSession(options) {
   // setting the authorizedRequestOptions on the polarityRequest object so we can used fot the retry logic
   polarityRequest.authorizedRequestOptions = {
     method: 'POST',
-    path: '/api/v1/authenticatedSession',
+    path: 'api/v1/authenticatedSession',
     body: {
       apiKey,
       username: options.username,
@@ -107,6 +107,26 @@ function validateOptions(userOptions, cb) {
     errors.push({
       key: 'url',
       message: 'You must provide a URL'
+    });
+  }
+
+  if (
+      typeof userOptions.url.value !== 'string' ||
+      (typeof userOptions.url.value === 'string' && userOptions.url.value.includes('/api'))
+  ) {
+    errors.push({
+      key: 'url',
+      message: 'URL should not include /api/v1 path.'
+    });
+  }
+
+  if (
+      typeof userOptions.url.value !== 'string' ||
+      (typeof userOptions.url.value === 'string' && !userOptions.url.value.startsWith('https://'))
+  ) {
+    errors.push({
+      key: 'url',
+      message: 'URL must start with `https://`'
     });
   }
 
