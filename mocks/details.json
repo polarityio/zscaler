@@ -1,0 +1,48 @@
+{
+  "categories": [
+    {
+      "id": "CUSTOM_MALICIOUS_URLS",
+      "configuredName": "Custom Malicious URLs",
+      "customCategory": true,
+      "type": "URL_CATEGORY",
+      "urlCount": 1247
+    },
+    {
+      "id": "CUSTOM_BLOCKED_DOMAINS", 
+      "configuredName": "Custom Blocked Domains",
+      "customCategory": true,
+      "type": "URL_CATEGORY",
+      "urlCount": 523
+    }
+  ],
+  "id": "CUSTOM_MALICIOUS_URLS",
+  "configuredName": "Custom Malicious URLs",
+  "description": "Custom category for known malicious URLs",
+  "customCategory": true,
+  "type": "URL_CATEGORY",
+  "dbCategorizedUrls": [
+    "malicious-site.com",
+    "phishing-example.net",
+    "suspicious-domain.org"
+  ],
+  "urlsRetainedForReverse": 100,
+  "customUrlsCount": 1247,
+  "urlsRetainedForReverseCount": 100,
+  "superCategory": "SECURITY",
+  "editable": true,
+  "val": 128,
+  "scopes": [
+    {
+      "type": "ORGANIZATION",
+      "scopeEntities": []
+    }
+  ],
+  "inCategory": true,
+  "ipRanges": [],
+  "ipRangesRetainedForReverse": [],
+  "lastModifiedTime": 1705401234000,
+  "lastModifiedBy": {
+    "id": 12345678,
+    "name": "admin@example.com"
+  }
+}
